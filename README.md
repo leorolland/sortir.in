@@ -2,6 +2,7 @@
 
 <div align="center">
 
+![CI](https://github.com/username/sortir.in/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Go Version](https://img.shields.io/badge/go-1.25%2B-00ADD8.svg)
 ![Node Version](https://img.shields.io/badge/node-18%2B-brightgreen.svg)
@@ -88,6 +89,34 @@ To clean build artifacts:
 ```bash
 make clean
 ```
+
+### Testing CI Locally
+
+You can test the CI workflow locally before pushing changes using [act](https://github.com/nektos/act), a tool for running GitHub Actions locally:
+
+1. Install Docker (required for act)
+2. Install act:
+   ```bash
+   # macOS
+   brew install act
+
+   # Linux
+   curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+
+   # Windows (with Chocolatey)
+   choco install act-cli
+   ```
+3. Run the CI workflow locally:
+   ```bash
+   # From the repository root
+   act
+
+   # To run a specific job
+   act -j build
+
+   # To list all available actions
+   act -l
+   ```
 
 ## 🤝 Contributing
 
