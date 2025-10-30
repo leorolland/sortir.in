@@ -1,17 +1,30 @@
 <script lang="ts">
   import { MapLibre } from 'svelte-maplibre';
-  import { onMount } from 'svelte';
   import { pinsStore } from '$lib/stores/pins';
   import 'maplibre-gl/dist/maplibre-gl.css';
-  import { Marker, Popup } from 'maplibre-gl';
+  import { Marker, Popup, Map as MaplibreMap } from 'maplibre-gl';
 
   // Subscribe to pins store
   const pins = $derived($pinsStore);
-  let map = $state<any>(null);
+  let map = $state<MaplibreMap | undefined>(undefined);
 
-  // Load pins on component mount
-  onMount(async () => {
-    await pinsStore.loadPins();
+  // Function to update pins based on current map bounds
+  async function updatePins() {
+    if (!map) return;
+    await pinsStore.loadPins(map.getBounds());
+  }
+
+  // Effect to add map event listeners when map is available
+  $effect(() => {
+    if (!map) return;
+
+    map.on('moveend', updatePins);
+
+    updatePins();
+
+    return () => {
+      map?.off('moveend', updatePins);
+    };
   });
 
   // Effect to add markers when map is available or pins change
@@ -29,10 +42,10 @@
           <div style="font-weight: bold;">${event.name}</div>
         `);
 
-      new Marker({ draggable: true })
+      new Marker({ draggable: false })
         .setLngLat(event.getCoordinates())
         .setPopup(popup)
-        .addTo(map);
+        .addTo(map as MaplibreMap);
     });
   });
 </script>

@@ -7,6 +7,13 @@ export interface EventWithCoordinates extends EventsResponse {
   getCoordinates(): [number, number];
 }
 
+export interface MapBounds {
+  getNorth(): number;
+  getSouth(): number;
+  getEast(): number;
+  getWest(): number;
+}
+
 function createPinsStore() {
   const { subscribe, set } = writable<EventWithCoordinates[]>([]);
 
@@ -20,10 +27,16 @@ function createPinsStore() {
 
   return {
     subscribe,
-    loadPins: async (page = 1, perPage = 50) => {
+    loadPins: async (bounds: MapBounds) => {
+      const page = 1; // Fixed page value
+      const perPage = 200; // Fixed perPage value
       try {
-        // Query events from PocketBase
-        const eventsResult = await client.collection('events').getList<EventsResponse>(page, perPage);
+        const filter = `(loc.lat>${bounds.getSouth()}&&loc.lat<${bounds.getNorth()}&&loc.lon<${bounds.getEast()}&&loc.lon>${bounds.getWest()})`;
+        const eventsResult = await client.collection('events').getList<EventsResponse>(
+          page,
+          perPage,
+          { filter }
+        );
 
         // Enhance events with coordinates helper
         const enhancedEvents = eventsResult.items.map(enhanceEvent);
