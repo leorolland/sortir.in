@@ -1,0 +1,12 @@
+# Ignore files for PNPM, NPM and YARN
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Ignore generated files
+.cache/
+.local/
+.npm/
+.svelte-kit/
+build/
+node_modules/
