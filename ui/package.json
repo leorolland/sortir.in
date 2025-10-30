@@ -36,7 +36,9 @@
   "type": "module",
   "dependencies": {
     "@simplewebauthn/browser": "^13.1.0",
+    "maplibre-gl": "^5.10.0",
     "pocketbase": "^0.26.0",
+    "svelte-maplibre": "^1.2.4",
     "zod": "^3.24.3"
   },
   "pnpm": {

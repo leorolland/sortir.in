@@ -1,32 +1,27 @@
 @use "water_extras.scss";
 
-html {
+/* Global box-sizing reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --header-height: 60px;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+               Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif;
   display: flex;
-  flex-flow: column;
-  min-height: 100vh;
-  body {
-    flex: 1 1 auto;
-    display: flex;
-    flex-flow: column;
-    // override max-width water.css
-    width: 100%;
-    max-width: unset;
-    // no horizonal scrollbars
-    overflow-x: hidden;
-    // override default fonts
-    font-family:
-      Roboto,
-      Oxygen,
-      Ubuntu,
-      Cantarell,
-      Fira Sans,
-      Droid Sans,
-      Helvetica Neue,
-      Segoe UI Emoji,
-      Apple Color Emoji,
-      Noto Color Emoji,
-      sans-serif;
-  }
+  flex-direction: column;
+  width: 100%;
+  max-width: 100vw;
 }
 
 .container {
@@ -58,4 +53,18 @@ html {
 
 pre.body {
   white-space: pre-wrap;
+}
+
+/* MapLibre styles */
+.maplibregl-map {
+  font: inherit;
+}
+
+.maplibregl-popup-content {
+  padding: 10px;
+  max-width: 300px;
+}
+
+.maplibregl-ctrl-group {
+  background-color: rgba(255, 255, 255, 0.8);
 }

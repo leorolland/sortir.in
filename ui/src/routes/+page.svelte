@@ -1,35 +1,27 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import { metadata } from "$lib/metadata.js";
+  import MapView from "$lib/components/MapView.svelte";
 
   const { data } = $props();
   $effect(() => {
     // you could set the metadata either here or in +page.ts
-    $metadata.title = "Home";
-    $metadata.headline = `Welcome to ${data.config.site?.name}`;
+    $metadata.title = "sortir.cc";
+    $metadata.headline = ""; // Empty string instead of null
   });
 </script>
 
-<p>
-  Visit
-  <a
-    href="https://github.com/spinspire/pocketbase-sveltekit-starter"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    https://github.com/spinspire/pocketbase-sveltekit-starter
-  </a>
-  on <i class="bx bxl-github bx-sm"></i>GitHub to read the documentation.
-</p>
+<div class="fullscreen-map">
+  <MapView />
+</div>
 
-<h2>Features</h2>
-<ul>
-  <li>Svelte 5: runes, $props, snippets, etc.</li>
-  <li>
-    SvelteKit: routing, PageData loading, CSR with <code>adapter-static</code>
-  </li>
-  <li>PocketBase: CRUD, typegen, realtime data updates</li>
-  <li>PocketBase: JSVM hook, routes, etc.</li>
-</ul>
-
-<p>Now <a href="{base}/posts">browse/edit/create some posts</a>.</p>
+<style>
+  .fullscreen-map {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+</style>

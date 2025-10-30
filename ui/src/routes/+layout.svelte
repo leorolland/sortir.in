@@ -20,34 +20,59 @@
   <title>{$metadata.title} | {config.site?.name}</title>
 </svelte:head>
 
-<header class="container">
-  <a href={`${base}/`} class="logo">
-    <img src={`${base}/favicon.svg`} alt="application logo" />
-  </a>
-  <Nav />
-  <LoginBadge signupAllowed={config.signupAllowed} />
+<header>
+  <div class="container header-content">
+    <a href={`${base}/`} class="logo">
+      <img src={`${base}/favicon.svg`} alt="application logo" />
+    </a>
+    <Nav />
+    <LoginBadge signupAllowed={config.signupAllowed} />
+  </div>
 </header>
-<main class="container">
+<div class="alerts-container">
   <Alerts />
-  <h1>{$metadata.headline ?? $metadata.title}</h1>
+</div>
+<main class="fullscreen">
   {@render children()}
 </main>
-<footer class="container">
-  Copyright &copy; {config.site?.year}
-  {config.site?.copyright}
-</footer>
 
 <style lang="scss">
   header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: var(--header-height);
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100%;
+    }
+
     .logo {
       width: 2rem;
       height: 2rem;
     }
   }
-  main {
+
+  .alerts-container {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    z-index: 900;
+    padding: 0 1rem;
+  }
+
+  main.fullscreen {
     flex-grow: 1;
+    padding-top: var(--header-height);
+    height: 100%;
+    width: 100%;
   }
 </style>
