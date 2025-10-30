@@ -1,17 +1,64 @@
-<script>
+<script lang="ts">
   import { MapLibre } from 'svelte-maplibre';
+  import { onMount } from 'svelte';
+  import { pinsStore } from '$lib/stores/pins';
+  import 'maplibre-gl/dist/maplibre-gl.css';
+  import { Marker, Popup } from 'maplibre-gl';
+
+  // Subscribe to pins store
+  const pins = $derived($pinsStore);
+  let map = $state<any>(null);
+
+  // Load pins on component mount
+  onMount(async () => {
+    await pinsStore.loadPins();
+  });
+
+  // Effect to add markers when map is available or pins change
+  $effect(() => {
+    if (!map) return;
+
+    // Clear existing markers first
+    const markers = document.querySelectorAll('.maplibregl-marker');
+    markers.forEach(marker => marker.remove());
+
+    // Add markers for each event
+    pins.forEach(event => {
+      const popup = new Popup({ offset: [0, -10] })
+        .setHTML(`
+          <div style="font-weight: bold;">${event.name}</div>
+        `);
+
+      new Marker({ draggable: true })
+        .setLngLat(event.getCoordinates())
+        .setPopup(popup)
+        .addTo(map);
+    });
+  });
 </script>
 
-<MapLibre
-  center={[-1.6794, 48.1147]}
-  zoom={12}
-  class="map"
-  standardControls
-  style="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" />
+<div class="map-container">
+  <MapLibre
+    center={[-1.6794, 48.1147]}
+    zoom={12}
+    class="map"
+    standardControls
+    style="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
+    bind:map={map} />
+</div>
 
 <style>
-  :global(.map) {
-    height: 100%;
+  .map-container {
     width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  :global(.map) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
   }
 </style>
