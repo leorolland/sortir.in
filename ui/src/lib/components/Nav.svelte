@@ -2,10 +2,7 @@
   import { base } from "$app/paths";
   import { page } from "$app/stores";
   const links = [
-    ["/", "Home"],
-    ["/posts/", "Posts"],
-    ["/hello/", "Hello"],
-    ["/ref-ui/", "UI Reference"],
+    ["/", "Carte"],
   ];
 </script>
 
@@ -19,23 +16,22 @@
 <style lang="scss">
   nav {
     a {
-      padding: 0.5em 1em;
+      padding: 0.6em 1.2em;
       margin: 0;
-      border-radius: 0;
-      background: var(--background-alt);
-      border-bottom: solid var(--background);
+      border-radius: 8px;
+      color: #333;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
       &.active {
-        background: var(--background);
-        font-weight: bold;
-        border-bottom: solid var(--links);
-      }
-      &:first-child {
-        border-top-left-radius: 0.5rem;
-        border-bottom-left-radius: 0.5rem;
-      }
-      &:last-child {
-        border-top-right-radius: 0.5rem;
-        border-bottom-right-radius: 0.5rem;
+        background-color: rgba(0, 122, 255, 0.1);
+        color: #007AFF;
+        font-weight: 600;
       }
     }
   }

@@ -3,7 +3,7 @@ import { writable } from "svelte/store";
 
 // Create a writable store for metadata
 export const metadata = writable({
-  title: "Pocketbase Sveltekit Starterkit",
-  headline: "Pocketbase Sveltekit Starterkit",
-  description: "A SvelteKit + PocketBase app",
+  title: "Sortir.in",
+  headline: "Sortir.in - Trouvez les événements près de chez vous",
+  description: "Sortir.in - Trouvez les événements près de chez vous",
 });

@@ -57,8 +57,8 @@
 {:else}
   <Dialog>
     {#snippet trigger(show)}
-      <button onclick={show}>
-        {signupAllowed ? "Sign In / Sign Up" : "Sign In"}
+      <button class="login-button" onclick={show}>
+        {signupAllowed ? "Connexion" : "Connexion"}
       </button>
     {/snippet}
     <Alerts />
@@ -73,25 +73,66 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+
     > img {
-      height: 2em;
-      width: 2em;
+      height: 2.2em;
+      width: 2.2em;
       border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
+
     > samp {
-      display: inline-block !important;
-      -moz-border-radius: 20px !important;
-      -webkit-border-radius: 20px !important;
-      -khtml-border-radius: 20px !important;
-      border-radius: 20px !important;
-      padding: 0.5rem !important;
-      text-align: center !important;
-      line-height: 1.5rem !important;
+      display: inline-block;
+      border-radius: 20px;
+      padding: 0.5rem 0.8rem;
+      text-align: center;
+      line-height: 1.5rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-weight: 500;
+      color: #333;
+      background-color: rgba(240, 240, 245, 0.7);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
   }
+
   .wrapper {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+
+    button {
+      border-radius: 8px;
+      padding: 8px 16px;
+      background-color: rgba(240, 240, 245, 0.7);
+      color: #007AFF;
+      font-weight: 500;
+      border: none;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: rgba(0, 122, 255, 0.1);
+      }
+    }
+  }
+
+  .login-button {
+    border-radius: 20px;
+    padding: 8px 16px;
+    background-color: rgba(0, 122, 255, 0.1);
+    color: #007AFF;
+    font-weight: 500;
+    border: none;
+    transition: all 0.2s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+    &:hover {
+      background-color: rgba(0, 122, 255, 0.2);
+    }
   }
 </style>
