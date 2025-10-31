@@ -11,7 +11,7 @@ func TestRandomCollectorSuccess(t *testing.T) {
 	collector := collector.NewRandomCollector()
 	events, err := collector.Collect(application.CollectLocation{
 		City: "Paris",
-		Long: 2.3522,
+		Lon: 2.3522,
 		Lat:  48.8566,
 		Radius: 10000,
 	})
