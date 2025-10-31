@@ -38,7 +38,7 @@
 
     // Add markers for each event
     pins.forEach(event => {
-      createEventMarker(event, () => {}).addTo(map!);
+      createEventMarker(event, map!, () => {}).addTo(map!);
     });
   });
 </script>

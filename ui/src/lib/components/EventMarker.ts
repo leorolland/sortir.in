@@ -6,18 +6,24 @@ import './EventMarker.css';
 /**
  * Creates a custom event marker with popup
  * @param event The event data
+ * @param map Map instance for fly animation
  * @param onClick Click handler for the marker
  * @returns The created marker instance
  */
 export function createEventMarker(
   event: EventWithCoordinates,
+  map: MaplibreMap,
   onClick: (eventId: string) => void
 ): Marker {
   const timeStatus = getRelativeTimeDisplay(event.begin, event.end);
   const statusClass = timeStatus === 'En cours' ? 'status-ongoing' :
                      timeStatus === 'Terminé' ? 'status-ended' : 'status-upcoming';
 
-  const popup = new Popup({ offset: [0, -10], className: 'custom-popup' })
+  const popup = new Popup({
+    offset: [0, -10],
+    className: 'custom-popup',
+    closeButton: false
+  })
     .setHTML(`
       <div class="popup-content">
         <div class="popup-title">${event.name}</div>
@@ -36,7 +42,19 @@ export function createEventMarker(
     el.classList.add('marker-upcoming');
   }
 
-  el.addEventListener('click', () => onClick(event.id));
+  el.addEventListener('click', () => {
+    // Call the onClick handler
+    onClick(event.id);
+
+    // Fly to the marker location
+    const coordinates = event.getCoordinates();
+    map.flyTo({
+      center: coordinates,
+      speed: 1.2,
+      curve: 1.4,
+      essential: true
+    });
+  });
 
   return new Marker({ element: el, draggable: false })
     .setLngLat(event.getCoordinates())
