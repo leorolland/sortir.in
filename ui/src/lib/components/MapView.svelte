@@ -2,7 +2,8 @@
   import { MapLibre } from 'svelte-maplibre';
   import { pinsStore } from '$lib/stores/pins';
   import 'maplibre-gl/dist/maplibre-gl.css';
-  import { Marker, Popup, Map as MaplibreMap } from 'maplibre-gl';
+  import type { Map as MaplibreMap } from 'maplibre-gl';
+  import { createEventMarker } from '$lib/components/EventMarker';
 
   // Subscribe to pins store
   const pins = $derived($pinsStore);
@@ -37,15 +38,7 @@
 
     // Add markers for each event
     pins.forEach(event => {
-      const popup = new Popup({ offset: [0, -10] })
-        .setHTML(`
-          <div style="font-weight: bold;">${event.name}</div>
-        `);
-
-      new Marker({ draggable: false })
-        .setLngLat(event.getCoordinates())
-        .setPopup(popup)
-        .addTo(map as MaplibreMap);
+      createEventMarker(event, () => {}).addTo(map!);
     });
   });
 </script>
@@ -57,7 +50,8 @@
     class="map"
     standardControls
     style="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
-    bind:map={map} />
+    bind:map={map}
+  />
 </div>
 
 <style>

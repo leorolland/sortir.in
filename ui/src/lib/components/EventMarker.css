@@ -1,0 +1,64 @@
+/* Custom marker styles */
+.custom-marker {
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  border: 2px solid white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.marker-upcoming {
+  background-color: #1976d2; /* Blue */
+}
+
+.marker-ongoing {
+  background-color: #2e7d32; /* Green */
+}
+
+.marker-ended {
+  background-color: #757575; /* Gray */
+}
+
+/* Custom popup styles */
+.custom-popup .maplibregl-popup-content {
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.popup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.popup-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+.popup-date {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.status-upcoming {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-ongoing {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-ended {
+  background-color: #f5f5f5;
+  color: #757575;
+}
