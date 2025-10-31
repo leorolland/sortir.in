@@ -1,9 +1,9 @@
 package application
 
 type CollectLocation struct {
-	City string
-	Lat  float64
-	Lon  float64
+	City   string
+	Lat    float64
+	Lon    float64
 	Radius float64
 }
 

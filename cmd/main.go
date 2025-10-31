@@ -11,7 +11,7 @@ import (
 	"github.com/leorolland/sortir.in/cmd/webauthn"
 	"github.com/leorolland/sortir.in/ui"
 
-	// _ "github.com/leorolland/sortir.in/migrations"
+	_ "github.com/leorolland/sortir.in/migrations"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
@@ -78,7 +78,7 @@ func main() {
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
 
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
-		Automigrate:  isGoRun,
+		Automigrate: isGoRun,
 	})
 
 	webauthn.Register(app)
@@ -116,8 +116,8 @@ func main() {
 
 					params[paramName1] = "Event 1"
 					params[paramName2] = types.GeoPoint{
-						Lat: rand.Float64() * 180 - 90,
-						Lon: rand.Float64() * 360 - 180,
+						Lat: rand.Float64()*180 - 90,
+						Lon: rand.Float64()*360 - 180,
 					}
 				}
 

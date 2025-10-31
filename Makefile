@@ -29,4 +29,4 @@ build: ui/build
 
 clean:
 	rm -f $(BINARY_NAME)
-	rm -rf ui/build
+	rm -rf ui/build pb_data
