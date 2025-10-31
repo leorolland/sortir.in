@@ -19,7 +19,7 @@
     collapsed = !collapsed;
 
     if (map) {
-      const padding = { left: collapsed ? 0 : 350 };
+      const padding = { left: collapsed ? 0 : 380 };
       map.easeTo({
         padding,
         duration: 100
@@ -29,6 +29,16 @@
 </script>
 
 <div class="sidebar-container">
+  {#if collapsed}
+    <button
+      type="button"
+      class="open-sidebar-button"
+      onclick={toggleSidebar}
+      aria-label="Ouvrir le panneau latéral"
+    >
+      ≡
+    </button>
+  {/if}
   <div class="sidebar {collapsed ? 'collapsed' : ''}">
     <div class="sidebar-content">
       <h2 class="sidebar-title">Événements</h2>
@@ -59,14 +69,16 @@
           </div>
         {/if}
       </div>
-      <button
-        type="button"
-        class="sidebar-toggle"
-        onclick={toggleSidebar}
-        aria-label={collapsed ? 'Ouvrir le panneau latéral' : 'Fermer le panneau latéral'}
-      >
-        {collapsed ? '→' : '←'}
-      </button>
+      {#if !collapsed}
+        <button
+          type="button"
+          class="sidebar-toggle"
+          onclick={toggleSidebar}
+          aria-label="Fermer le panneau latéral"
+        >
+          <span class="close-icon">×</span>
+        </button>
+      {/if}
     </div>
   </div>
 </div>
@@ -80,35 +92,47 @@
     height: 100%;
     z-index: 1;
     pointer-events: none;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
   }
 
   /* Sidebar */
   .sidebar {
-    width: 350px;
-    height: 100%;
-    transition: transform 100ms;
+    width: 380px;
+    height: auto;
+    min-height: 200px;
+    max-height: calc(100% - 40px);
+    transition: transform 100ms ease, height 400ms cubic-bezier(0.25, 1, 0.5, 1), max-height 400ms cubic-bezier(0.25, 1, 0.5, 1);
     pointer-events: auto;
     background: rgba(240, 240, 245, 0.7);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .sidebar.collapsed {
-    transform: translateX(-345px);
+    transform: translateX(-420px);
   }
 
   /* Content area */
   .sidebar-content {
     width: 100%;
-    height: 100%;
-    padding: 20px;
+    flex: 1;
+    padding: 24px;
     box-sizing: border-box;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
+    max-height: 100%;
   }
 
   .sidebar-content::-webkit-scrollbar {
@@ -118,27 +142,73 @@
   /* Toggle button */
   .sidebar-toggle {
     position: absolute;
-    width: 36px;
-    height: 36px;
-    top: 15px;
-    right: -36px;
+    width: 32px;
+    height: 32px;
+    top: 16px;
+    right: 16px;
     background: rgba(240, 240, 245, 0.7);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: none;
-    border-radius: 0 18px 18px 0;
-    box-shadow: 3px 0 8px -2px rgba(0, 0, 0, 0.15);
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 18px;
+    font-size: 16px;
     padding: 0;
     color: #007AFF;
+    z-index: 10;
+    transition: all 0.2s ease;
   }
 
   .sidebar-toggle:hover {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.05);
+  }
+
+  .sidebar-toggle:active {
+    transform: scale(0.95);
+  }
+
+  .close-icon {
+    font-size: 22px;
+    line-height: 0;
+    position: relative;
+    top: 1px;
+    font-weight: 300;
+  }
+
+  /* Open sidebar button */
+  .open-sidebar-button {
+    width: 40px;
+    height: 40px;
+    background: rgba(240, 240, 245, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    padding: 0;
+    color: #007AFF;
+    margin-left: 10px;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+  }
+
+  .open-sidebar-button:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.05);
+  }
+
+  .open-sidebar-button:active {
+    transform: scale(0.95);
   }
 
   /* Event list */
@@ -147,55 +217,67 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    flex: 1;
-    overflow-y: auto;
     padding: 5px 0;
-  }
-
-  /* Hide scrollbar completely */
-  .events-list {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-  }
-
-  .events-list::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    flex: 1;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   /* Event item */
   .event-item {
-    padding: 15px;
-    border-radius: 12px;
-    background-color: rgba(255, 255, 255, 0.6);
+    padding: 18px;
+    border-radius: 16px;
+    background-color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease, opacity 0.3s ease, transform 0.3s ease;
     width: 100%;
     text-align: left;
     border: none;
     display: block;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
     margin-bottom: 2px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    min-height: 90px;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .event-item:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .event-item:active {
+    transform: translateY(0) scale(0.99);
     background-color: rgba(255, 255, 255, 0.8);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .event-name {
     font-weight: 600;
-    font-size: 16px;
-    margin-bottom: 8px;
+    font-size: 17px;
+    margin-bottom: 10px;
     color: #000;
     letter-spacing: -0.2px;
+    line-height: 1.3;
   }
 
   .event-time {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 20px;
     display: inline-block;
     background-color: rgba(0, 122, 255, 0.1);
@@ -205,7 +287,7 @@
 
   .sidebar-title {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
     color: #000;
     margin: 0 0 5px 0;
@@ -217,10 +299,18 @@
     color: #8E8E93; /* iOS gray color */
     font-size: 16px;
     text-align: center;
-    padding: 30px 20px;
-    border-radius: 12px;
-    background-color: rgba(240, 240, 245, 0.4);
-    margin: 20px 0;
+    padding: 20px;
+    border-radius: 16px;
+    background-color: rgba(240, 240, 245, 0.3);
+    margin: 10px 0;
     letter-spacing: -0.2px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.4s ease-out;
+    transition: all 0.3s ease;
   }
 </style>
