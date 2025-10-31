@@ -69,6 +69,23 @@ func (c *pbClient) saveEvent(event application.Event) error {
 		if err != nil {
 			return fmt.Errorf("failed to read response body: %w", err)
 		}
+
+		if resp.StatusCode == 400 {
+			var errorResp struct {
+				Data struct {
+					Name struct {
+						Code string `json:"code"`
+					} `json:"name"`
+				} `json:"data"`
+			}
+
+			if err := json.Unmarshal(body, &errorResp); err == nil &&
+				errorResp.Data.Name.Code == "validation_not_unique" {
+				// Skip this error - duplicate event name
+				return nil
+			}
+		}
+
 		return fmt.Errorf("request failed with status code: %d and body: %s", resp.StatusCode, string(body))
 	}
 
