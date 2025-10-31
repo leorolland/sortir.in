@@ -2,7 +2,6 @@
 
 <div align="center">
 
-![CI](https://github.com/username/sortir.in/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Go Version](https://img.shields.io/badge/go-1.25%2B-00ADD8.svg)
 ![Node Version](https://img.shields.io/badge/node-18%2B-brightgreen.svg)
@@ -12,6 +11,8 @@
 </div>
 
 ## 🌟 Overview
+
+<img src="md/nearby_events.png">
 
 Sortir is an event discovery platform that aggregates and visualizes local events on an interactive map. It solves a common problem: finding interesting activities nearby shouldn't require checking multiple specialized platforms.
 
@@ -24,6 +25,7 @@ While existing services focus on specific niches (concerts, movies, art exhibiti
 - 🔍 **Smart Discovery** - Find events based on your preferences and location
 - 📱 **Responsive Design** - Works seamlessly across desktop and mobile devices
 - 🧭 **Activity Planning** - Create custom itineraries for exploring new cities
+
 
 ## ⚙️ Technical stack
 
