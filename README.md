@@ -25,9 +25,47 @@ While existing services focus on specific niches (concerts, movies, art exhibiti
 - 📱 **Responsive Design** - Works seamlessly across desktop and mobile devices
 - 🧭 **Activity Planning** - Create custom itineraries for exploring new cities
 
-## 🖼️ Screenshots
+## ⚙️ Technical stack
 
-*Coming soon*
+### Client and server
+```mermaid
+sequenceDiagram
+   participant br as Browser
+
+   participant pb as PocketBase (/cmd)
+   Note over pb: BaaS server
+
+   participant sk as SvelteKit (/ui)
+   Note over sk: adapter-static
+
+   sk->>pb: compiled SK app <br>(bundled with `go:embed`)
+   pb->>br: serve SK app
+   br->>pb: API calls
+   pb->>pb: SQLite
+   pb->>br: res
+```
+
+### Data collection
+```mermaid
+sequenceDiagram title Infrastructure sequence
+
+   participant pb as PocketBase (/cmd)
+   Note over pb: BaaS server
+
+   participant cl as Collectors
+
+   participant iw as Indexed website
+
+   pb->>pb: CRON Job
+
+loop for each collector
+   pb->>cl: Collect()
+   cl->>iw: Fetch API or webpages
+   iw->>cl: Raw data
+   cl->>cl: Clean and normalize<br>collected events
+   cl->>pb: Upsert event
+end
+```
 
 ## 🚀 Getting Started
 
