@@ -26,10 +26,36 @@ export function getRelativeTimeDisplay(beginDateString: string, endDateString?: 
     }
 
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) {
+    if (diffHours < 12) {
       return `Dans ${diffHours} heure${diffHours !== 1 ? 's' : ''}`;
     }
 
+    // Check if it's tomorrow
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (
+      beginDate.getDate() === tomorrow.getDate() &&
+      beginDate.getMonth() === tomorrow.getMonth() &&
+      beginDate.getFullYear() === tomorrow.getFullYear()
+    ) {
+      // Format time as HH:MM
+      const hours = beginDate.getHours().toString().padStart(2, '0');
+      const minutes = beginDate.getMinutes().toString().padStart(2, '0');
+      return `Demain à ${hours}:${minutes}`;
+    }
+
+    // Check if it's within the next week
+    if (diffHours < 24 * 7) {
+      const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+      const dayName = dayNames[beginDate.getDay()];
+      const hours = beginDate.getHours().toString().padStart(2, '0');
+      const minutes = beginDate.getMinutes().toString().padStart(2, '0');
+
+      return `${dayName} à ${hours}:${minutes}`;
+    }
+
+    // More than a week away
     const diffDays = Math.floor(diffHours / 24);
     return `Dans ${diffDays} jour${diffDays !== 1 ? 's' : ''}`;
   }

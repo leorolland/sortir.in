@@ -7,6 +7,13 @@
   export let pins: EventWithCoordinates[] = [];
   export let collapsed = true;
 
+  // Sort events by date (closest first)
+  $: sortedEvents = [...pins].sort((a, b) => {
+    const dateA = new Date(a.begin);
+    const dateB = new Date(b.begin);
+    return dateA.getTime() - dateB.getTime();
+  });
+
   // Function to toggle sidebar and update map padding
   function toggleSidebar() {
     collapsed = !collapsed;
@@ -26,8 +33,8 @@
     <div class="sidebar-content">
       <h2 class="sidebar-title">Événements</h2>
       <div class="events-list">
-        {#if pins.length > 0}
-          {#each pins as event}
+        {#if sortedEvents.length > 0}
+          {#each sortedEvents as event}
             <button
               class="event-item"
               onclick={() => {
