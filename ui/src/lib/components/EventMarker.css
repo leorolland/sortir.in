@@ -1,4 +1,3 @@
-/* Custom marker styles */
 .custom-marker {
   border-radius: 50%;
   width: 20px;
@@ -20,45 +19,141 @@
   background-color: #757575; /* Gray */
 }
 
-/* Custom popup styles */
 .custom-popup .maplibregl-popup-content {
-  padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   border: none;
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.85);
 }
 
 .popup-content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  max-width: 280px;
 }
 
 .popup-title {
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 18px;
+  color: #111;
+  margin-bottom: 2px;
+}
+
+.popup-date {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.popup-place {
+  font-weight: 500;
   font-size: 14px;
   color: #333;
 }
 
-.popup-date {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 2px 8px;
+.popup-address {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.popup-kind {
+  font-size: 13px;
+  color: #555;
+  background-color: #f5f5f7;
+  padding: 3px 8px;
   border-radius: 12px;
   display: inline-block;
 }
 
+.popup-genres {
+  margin: 4px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.genre-tag {
+  font-size: 11px;
+  color: #666;
+  background-color: rgba(0, 122, 255, 0.08);
+  border-radius: 12px;
+  padding: 2px 8px;
+  display: inline-block;
+}
+
+.popup-price {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  margin-top: 4px;
+}
+
+.popup-image {
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.popup-image img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  aspect-ratio: 16/9;
+}
+
+.popup-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.popup-button {
+  background-color: #f1f1f1;
+  color: rgb(136, 136, 136);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.popup-button:hover {
+  background-color: #c6c6c6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.external-link-icon {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+}
+
 .status-upcoming {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background-color: rgba(0, 122, 255, 0.15);
+  color: #007AFF;
 }
 
 .status-ongoing {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  background-color: rgba(52, 199, 89, 0.15);
+  color: #34C759;
 }
 
 .status-ended {
-  background-color: #f5f5f5;
-  color: #757575;
+  background-color: rgba(142, 142, 147, 0.15);
+  color: #8E8E93;
 }

@@ -35,7 +35,7 @@ function createPinsStore() {
         const endDate = new Date();
         endDate.setHours(endDate.getHours() + 12);
 
-        const filter = `(begin>'${new Date().toISOString()}'&&begin<'${endDate.toISOString()}'&&loc.lat>${bounds.getSouth()}&&loc.lat<${bounds.getNorth()}&&loc.lon<${bounds.getEast()}&&loc.lon>${bounds.getWest()})`;
+        const filter = `(begin<'${endDate.toISOString()}'&&loc.lat>${bounds.getSouth()}&&loc.lat<${bounds.getNorth()}&&loc.lon<${bounds.getEast()}&&loc.lon>${bounds.getWest()})`;
 
         const eventsResult = await client.collection('events').getList<EventsResponse>(
           page,

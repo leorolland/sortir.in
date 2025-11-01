@@ -96,12 +96,20 @@ export type SuperusersRecord = {
 	verified?: boolean
 }
 
-export type EventsRecord = {
-	begin?: IsoDateString
-	end?: IsoDateString
+export type EventsRecord<Tgenres = unknown> = {
+	address?: string
+	begin: IsoDateString
+	end: IsoDateString
+	genres?: null | Tgenres
 	id: string
-	loc?: GeoPoint
-	name?: string
+	img?: string
+	kind: string
+	loc: GeoPoint
+	name: string
+	place?: string
+	price?: number
+	price_currency?: string
+	source?: string
 }
 
 export type UsersRecord = {
@@ -123,7 +131,7 @@ export type ExternalauthsResponse<Texpand = unknown> = Required<ExternalauthsRec
 export type MfasResponse<Texpand = unknown> = Required<MfasRecord> & BaseSystemFields<Texpand>
 export type OtpsResponse<Texpand = unknown> = Required<OtpsRecord> & BaseSystemFields<Texpand>
 export type SuperusersResponse<Texpand = unknown> = Required<SuperusersRecord> & AuthSystemFields<Texpand>
-export type EventsResponse<Texpand = unknown> = Required<EventsRecord> & BaseSystemFields<Texpand>
+export type EventsResponse<Tgenres = unknown, Texpand = unknown> = Required<EventsRecord<Tgenres>> & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
 
 // Types containing all Records and Responses, useful for creating typing helper functions
