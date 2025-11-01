@@ -40,12 +40,24 @@ type allEventsResponse struct {
 	Message string `json:"message"`
 	Data    []struct {
 		Eventname string `json:"eventname"`
+		ThumbURL  string `json:"thumb_url"`
 		StartTime string `json:"start_time"`
 		EndTime   string `json:"end_time"`
+		Location  string `json:"location"` // place
 		Venue     struct {
+			Street    string `json:"street"` // address
 			Latitude  string `json:"latitude"`
 			Longitude string `json:"longitude"`
 		} `json:"venue"`
+		CustomParams struct {
+			XFormat                    []string `json:"x_format"`                      // kind
+			HighConfidenceMergedLookup []string `json:"high_confidence_merged_lookup"` // categories
+		} `json:"custom_params"`
+		ShareURL string `json:"share_url"` // source
+		Tickets  struct {
+			MinTicketPrice *float64 `json:"min_ticket_price"`
+			TicketCurrency *string  `json:"ticket_currency"`
+		} `json:"tickets"`
 	} `json:"data"`
 }
 
@@ -58,7 +70,7 @@ func (c *allEventsCollector) Collect(location application.CollectLocation) ([]ap
 		ExcludeCities: []string{location.City},
 		Category:      "music",
 		IsTimeFilter:  false,
-		StartDate:     strconv.FormatInt(time.Now().Unix(), 10),
+		StartDate:     strconv.FormatInt(time.Now().AddDate(0, 0, -2).Unix(), 10),
 		EndDate:       strconv.FormatInt(time.Now().AddDate(0, 1, 0).Unix(), 10),
 	}
 
@@ -96,7 +108,11 @@ func (c *allEventsCollector) Collect(location application.CollectLocation) ([]ap
 		return nil, fmt.Errorf("API error: %s", allEventsResp.Message)
 	}
 
-	var events []application.Event
+	return toEvents(allEventsResp)
+}
+
+func toEvents(allEventsResp allEventsResponse) ([]application.Event, error) {
+	events := []application.Event{}
 	for _, eventData := range allEventsResp.Data {
 		startTimeUnix, err := strconv.ParseInt(eventData.StartTime, 10, 64)
 		if err != nil {
@@ -121,14 +137,31 @@ func (c *allEventsCollector) Collect(location application.CollectLocation) ([]ap
 		}
 
 		event := application.Event{
-			Name:  eventData.Eventname,
-			Lat:   lat,
-			Lon:   lon,
-			Begin: startTime,
-			End:   endTime,
+			Name:   eventData.Eventname,
+			Kind:   xFormatToKind(eventData.CustomParams.XFormat),
+			Genres: eventData.CustomParams.HighConfidenceMergedLookup,
+			Begin:  startTime,
+			End:    endTime,
+			Loc: application.EventLocation{
+				Lat: lat,
+				Lon: lon,
+			},
+			Place:         eventData.Location,
+			Address:       eventData.Venue.Street,
+			Price:         eventData.Tickets.MinTicketPrice,
+			PriceCurrency: eventData.Tickets.TicketCurrency,
+			Source:        eventData.ShareURL,
+			Img:           eventData.ThumbURL,
 		}
 		events = append(events, event)
 	}
-
 	return events, nil
+}
+
+func xFormatToKind(xFormat []string) string {
+	if len(xFormat) == 0 {
+		return "event"
+	}
+
+	return xFormat[0]
 }

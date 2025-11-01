@@ -10,17 +10,23 @@ import (
 )
 
 func main() {
+	if len(os.Args) < 2 {
+		slog.Error("Missing city argument. Usage: allevents <city>")
+		os.Exit(1)
+	}
+	city := os.Args[1]
+
 	collector := collector.NewAllEventsCollector()
 	eventSaver := pb.NewPBClient("http://localhost:8090")
 	populator := application.NewPopulator(collector, eventSaver)
 
-	slog.Info("Populate events for Rennes")
+	slog.Info("Populate events for " + city)
 	err := populator.Populate(application.CollectLocation{
-		City:   "rennes",
+		City:   city,
 		Radius: 100000,
 	})
 	if err != nil {
-		slog.Error("Failed to populate events for Rennes", "error", err)
+		slog.Error("Failed to populate events for "+city, "error", err)
 		os.Exit(1)
 	}
 	slog.Info("Events populated")

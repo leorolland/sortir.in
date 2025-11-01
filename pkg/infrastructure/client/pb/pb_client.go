@@ -31,23 +31,39 @@ func (c *pbClient) SaveEvents(events []application.Event) error {
 }
 
 type saveEventRequest struct {
-	Name  string    `json:"name"`
-	Begin time.Time `json:"begin"`
-	End   time.Time `json:"end"`
-	Loc   struct {
-		Lon float64 `json:"lon"`
+	Name   string    `json:"name"`
+	Kind   string    `json:"kind"`
+	Genres []string  `json:"genres"`
+	Begin  time.Time `json:"begin"`
+	End    time.Time `json:"end"`
+	Loc    struct {
 		Lat float64 `json:"lat"`
+		Lon float64 `json:"lon"`
 	} `json:"loc"`
+	Place         string   `json:"place"`
+	Address       string   `json:"address"`
+	Price         *float64 `json:"price,omitempty"`
+	PriceCurrency *string  `json:"price_currency,omitempty"`
+	Source        string   `json:"source"`
+	Img           string   `json:"img"`
 }
 
 func (c *pbClient) saveEvent(event application.Event) error {
 	req := saveEventRequest{
-		Name:  event.Name,
-		Begin: event.Begin,
-		End:   event.End,
+		Name:          event.Name,
+		Kind:          event.Kind,
+		Genres:        event.Genres,
+		Begin:         event.Begin,
+		End:           event.End,
+		Place:         event.Place,
+		Address:       event.Address,
+		Price:         event.Price,
+		PriceCurrency: event.PriceCurrency,
+		Source:        event.Source,
+		Img:           event.Img,
 	}
-	req.Loc.Lat = event.Lat
-	req.Loc.Lon = event.Lon
+	req.Loc.Lon = event.Loc.Lon
+	req.Loc.Lat = event.Loc.Lat
 
 	jsonData, err := json.Marshal(req)
 	if err != nil {
