@@ -66,7 +66,7 @@ func (c *allEventsCollector) Collect(location application.CollectLocation) ([]ap
 		City:          location.City,
 		Page:          0,
 		Rows:          500,
-		Radius:        int(location.Radius),
+		Radius:        int(location.Radius) * 5000,
 		ExcludeCities: []string{location.City},
 		Category:      "music",
 		IsTimeFilter:  false,
