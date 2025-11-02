@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -24,54 +25,60 @@ func NewAllEventsCollector() application.Collector {
 }
 
 type allEventsRequest struct {
-	City          string   `json:"city"`
-	Page          int      `json:"page"`
-	Rows          int      `json:"rows"`
-	Radius        int      `json:"radius"`
-	ExcludeCities []string `json:"exclude_cities"`
-	Category      string   `json:"category"`
-	IsTimeFilter  bool     `json:"is_time_filter"`
-	StartDate     string   `json:"start_date"`
-	EndDate       string   `json:"end_date"`
+	Latitude        string `json:"latitude"`
+	Longitude       string `json:"longitude"`
+	City            string `json:"city"`
+	StartDate       string `json:"start_date"`
+	SearchScope     string `json:"search_scope"`
+	Page            int    `json:"page"`
+	Rows            int    `json:"rows"`
+	ShowLongDateFmt bool   `json:"show_long_date_format"`
+	Distance        int    `json:"distance"`
+	UserLat         string `json:"user_lat"`
+	UserLong        string `json:"user_long"`
+}
+
+type allEventsSearchResult struct {
+	Eventname string  `json:"eventname"` // Name
+	ThumbURL  string  `json:"thumb_url"` // Img
+	StartTime string  `json:"start_time"`
+	EndTime   string  `json:"end_time"`
+	Location  *string `json:"location"` // Place
+	Venue     struct {
+		Street    string `json:"street"` // Address
+		Latitude  string `json:"latitude"`
+		Longitude string `json:"longitude"`
+	} `json:"venue"`
+	ShareURL string `json:"share_url"` // Source
+	Tickets  struct {
+		TicketCurrency *string     `json:"ticket_currency,omitempty"`
+		MinTicketPrice interface{} `json:"min_ticket_price,omitempty"`
+	} `json:"tickets"`
 }
 
 type allEventsResponse struct {
-	Error   int    `json:"error"`
-	Message string `json:"message"`
-	Data    []struct {
-		Eventname string `json:"eventname"`
-		ThumbURL  string `json:"thumb_url"`
-		StartTime string `json:"start_time"`
-		EndTime   string `json:"end_time"`
-		Location  string `json:"location"` // place
-		Venue     struct {
-			Street    string `json:"street"` // address
-			Latitude  string `json:"latitude"`
-			Longitude string `json:"longitude"`
-		} `json:"venue"`
-		CustomParams struct {
-			XFormat                    []string `json:"x_format"`                      // kind
-			HighConfidenceMergedLookup []string `json:"high_confidence_merged_lookup"` // categories
-		} `json:"custom_params"`
-		ShareURL string `json:"share_url"` // source
-		Tickets  struct {
-			MinTicketPrice *float64 `json:"min_ticket_price"`
-			TicketCurrency *string  `json:"ticket_currency"`
-		} `json:"tickets"`
-	} `json:"data"`
+	SearchResults []allEventsSearchResult `json:"search_result"`
+	Page          int                     `json:"page"`
+	Rows          int                     `json:"rows"`
+	Error         int                     `json:"error"`
 }
 
 func (c *allEventsCollector) Collect(location application.CollectLocation) ([]application.Event, error) {
+	lat := strconv.FormatFloat(location.Lat, 'f', 10, 64)
+	lon := strconv.FormatFloat(location.Lon, 'f', 10, 64)
+
 	reqBody := allEventsRequest{
-		City:          location.City,
-		Page:          0,
-		Rows:          500,
-		Radius:        int(location.Radius) * 5000,
-		ExcludeCities: []string{location.City},
-		Category:      "music",
-		IsTimeFilter:  false,
-		StartDate:     strconv.FormatInt(time.Now().AddDate(0, 0, -2).Unix(), 10),
-		EndDate:       strconv.FormatInt(time.Now().AddDate(0, 1, 0).Unix(), 10),
+		Latitude:        lat,
+		Longitude:       lon,
+		City:            location.City,
+		StartDate:       time.Now().Format("2006-01-02"),
+		SearchScope:     "city",
+		Page:            0,
+		Rows:            3000,
+		ShowLongDateFmt: false,
+		Distance:        50,
+		UserLat:         lat,
+		UserLong:        lon,
 	}
 
 	jsonData, err := json.Marshal(reqBody)
@@ -79,7 +86,7 @@ func (c *allEventsCollector) Collect(location application.CollectLocation) ([]ap
 		return nil, fmt.Errorf("error marshaling request: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", "https://allevents.in/api/index.php/events/find-events-from-nearby-cities", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", "https://allevents.in/api/index.php/mobile_apps/v2/qs/search_with_filters_v2", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
@@ -87,7 +94,7 @@ func (c *allEventsCollector) Collect(location application.CollectLocation) ([]ap
 	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Origin", "https://allevents.in")
-	req.Header.Set("Referer", "https://allevents.in/"+location.City+"/music")
+	req.Header.Set("Referer", "https://allevents.in/"+location.City)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -104,27 +111,26 @@ func (c *allEventsCollector) Collect(location application.CollectLocation) ([]ap
 		return nil, fmt.Errorf("error decoding response: %w", err)
 	}
 
-	if allEventsResp.Error != 0 {
-		return nil, fmt.Errorf("API error: %s", allEventsResp.Message)
-	}
-
 	return toEvents(allEventsResp)
 }
 
 func toEvents(allEventsResp allEventsResponse) ([]application.Event, error) {
 	events := []application.Event{}
-	for _, eventData := range allEventsResp.Data {
+	for _, eventData := range allEventsResp.SearchResults {
 		startTimeUnix, err := strconv.ParseInt(eventData.StartTime, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing start time %q: %w", eventData.StartTime, err)
+			slog.Warn("error parsing start time, skipping event", "event", eventData.Eventname, "start_time", eventData.StartTime, "error", err)
+			continue
 		}
 
 		startTime := time.Unix(startTimeUnix, 0)
 
 		var endTime time.Time
-		endTimeUnix, err := strconv.ParseInt(eventData.EndTime, 10, 64)
-		if err == nil {
-			endTime = time.Unix(endTimeUnix, 0)
+		if eventData.EndTime != "" {
+			endTimeUnix, err := strconv.ParseInt(eventData.EndTime, 10, 64)
+			if err == nil {
+				endTime = time.Unix(endTimeUnix, 0)
+			}
 		}
 
 		lat, err := strconv.ParseFloat(eventData.Venue.Latitude, 64)
@@ -136,32 +142,50 @@ func toEvents(allEventsResp allEventsResponse) ([]application.Event, error) {
 			lon = 0
 		}
 
+		// Handle ticket prices
+		var price *float64
+		var priceCurrency *string
+
+		if eventData.Tickets.MinTicketPrice != nil {
+			switch v := eventData.Tickets.MinTicketPrice.(type) {
+			case string:
+				priceStr := v
+				priceVal, err := strconv.ParseFloat(priceStr, 64)
+				if err == nil && priceVal != 0 { // Set price if it's not 0, allevents put a lot of 0 prices even whitout knowing
+					price = &priceVal
+				}
+			case float64:
+				priceVal := v
+				if priceVal != 0 {
+					price = &priceVal
+				}
+			}
+			priceCurrency = eventData.Tickets.TicketCurrency
+		}
+
+		var place string
+		if eventData.Location != nil {
+			place = *eventData.Location
+		}
+
 		event := application.Event{
 			Name:   eventData.Eventname,
-			Kind:   xFormatToKind(eventData.CustomParams.XFormat),
-			Genres: eventData.CustomParams.HighConfidenceMergedLookup,
+			Kind:   "event",    // Default kind
+			Genres: []string{}, // No genres in the API response
 			Begin:  startTime,
 			End:    endTime,
 			Loc: application.EventLocation{
 				Lat: lat,
 				Lon: lon,
 			},
-			Place:         eventData.Location,
+			Place:         place,
 			Address:       eventData.Venue.Street,
-			Price:         eventData.Tickets.MinTicketPrice,
-			PriceCurrency: eventData.Tickets.TicketCurrency,
+			Price:         price,
+			PriceCurrency: priceCurrency,
 			Source:        eventData.ShareURL,
 			Img:           eventData.ThumbURL,
 		}
 		events = append(events, event)
 	}
 	return events, nil
-}
-
-func xFormatToKind(xFormat []string) string {
-	if len(xFormat) == 0 {
-		return "event"
-	}
-
-	return xFormat[0]
 }
