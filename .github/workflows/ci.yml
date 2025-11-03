@@ -1,15 +1,13 @@
 name: CI
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
-    name: Build
+    name: Test
     runs-on: ubuntu-latest
 
     strategy:
@@ -54,11 +52,9 @@ jobs:
           pnpm run build
 
       - name: Build application
-        run: go build -o sortir cmd/main.go
+        run: |
+          make build
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sortir-binary
-          path: sortir
-          retention-days: 7
+      - name: Test application
+        run: |
+          go test ./...
