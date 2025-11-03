@@ -56,31 +56,29 @@ jobs:
           cd ui
           pnpm run build
 
+      - name: Test application
+        run: |
+          go test ./...
+
       - name: Build application for multiple architectures
         run: |
-          # Build main application for arm64
-          GOARCH=arm64 make build
-          mv sortir sortir-arm64
+          export GOARCH=arm64
+          go build -o sortir.linux-arm64 cmd/main.go
+          go build -o populate.linux-arm64 cmd/populate/populate.go
 
-          # Build main application for amd64 (x86_64)
-          GOARCH=amd64 make build
-          mv sortir sortir-amd64
-
-          # Build populate command for arm64
-          GOARCH=arm64 go build -o populate-arm64 cmd/populate/populate.go
-
-          # Build populate command for amd64 (x86_64)
-          GOARCH=amd64 go build -o populate-amd64 cmd/populate/populate.go
+          export GOARCH=amd64
+          go build -o sortir.linux-amd64 cmd/main.go
+          go build -o populate.linux-amd64 cmd/populate/populate.go
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: binaries
           path: |
-            sortir-arm64
-            sortir-amd64
-            populate-arm64
-            populate-amd64
+            sortir.linux-arm64
+            sortir.linux-amd64
+            populate.linux-arm64
+            populate.linux-amd64
           retention-days: 3
 
       - name: Create release for tagged commits
@@ -88,10 +86,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            sortir-arm64
-            sortir-amd64
-            populate-arm64
-            populate-amd64
+            sortir.linux-arm64
+            sortir.linux-amd64
+            populate.linux-arm64
+            populate.linux-amd64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -102,10 +100,10 @@ jobs:
           name: Latest Build
           tag_name: latest
           files: |
-            sortir-arm64
-            sortir-amd64
-            populate-arm64
-            populate-amd64
+            sortir.linux-arm64
+            sortir.linux-amd64
+            populate.linux-arm64
+            populate.linux-amd64
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

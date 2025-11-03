@@ -51,10 +51,6 @@ jobs:
           cd ui
           pnpm run build
 
-      - name: Build application
-        run: |
-          make build
-
       - name: Test application
         run: |
           go test ./...
