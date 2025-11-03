@@ -51,7 +51,7 @@ export function createEventMarker(
           ${event.genres.map((genre: string) => `<span class="genre-tag">${genre}</span>`).join('')}
         </div>` : ''}
         ${event.price !== undefined && event.price_currency ? `<div class="popup-price">${event.price} ${event.price_currency}</div>` : ''}
-        ${event.img ? `<div class="popup-image"><img src="${event.img}" alt="${event.name}" /></div>` : ''}
+        ${event.img ? `<div class="popup-image"><img decoding="async" loading="lazy" src="${event.img}" alt="${event.name}" /></div>` : ''}
         <div class="popup-actions">
           <a href="${event.source}" target="_blank" rel="noopener noreferrer" class="popup-button">
             ${extractDomain(event.source) || 'Détails'}
