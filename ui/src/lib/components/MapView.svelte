@@ -3,7 +3,7 @@
   import { pinsStore } from '$lib/stores/pins';
   import 'maplibre-gl/dist/maplibre-gl.css';
   import type { Map as MaplibreMap } from 'maplibre-gl';
-  import { GeolocateControl } from 'maplibre-gl';
+  import { GeolocateControl, Marker } from 'maplibre-gl';
   import { createEventMarker } from '$lib/components/EventMarker';
   import MapSidebar from '$lib/components/MapSidebar.svelte';
 
@@ -44,18 +44,38 @@
     };
   });
 
-  // Effect to add markers when map is available or pins change
+  interface MarkerWithId {
+    marker: Marker;
+    eventId: string;
+  }
+  let markerMap: MarkerWithId[] = [];
+
+  // Effect to efficiently update markers when map is available or pins change
   $effect(() => {
     if (!map) return;
 
-    // Clear existing markers first
-    const markers = document.querySelectorAll('.maplibregl-marker');
-    markers.forEach(marker => marker.remove());
+    const refreshedPinIds = new Set(pins.map(pin => pin.id));
+    const markersToKeep: MarkerWithId[] = [];
 
-    // Add markers for each event
-    pins.forEach(event => {
-      createEventMarker(event, map!, () => {}).addTo(map!);
+    // Remove markers for pins that are no longer in the list
+    markerMap.forEach(({ marker, eventId }) => {
+      if (!refreshedPinIds.has(eventId)) {
+        marker.remove();
+      } else {
+        markersToKeep.push({ marker, eventId });
+      }
     });
+
+    // Add markers for pins that are not already in the list
+    const existingMarkerIds = new Set(markersToKeep.map(m => m.eventId));
+    pins.forEach(event => {
+      if (!existingMarkerIds.has(event.id)) {
+        const marker = createEventMarker(event, map!, () => {}).addTo(map!);
+        markersToKeep.push({ marker, eventId: event.id });
+      }
+    });
+
+    markerMap = markersToKeep;
   });
 </script>
 

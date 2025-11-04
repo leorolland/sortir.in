@@ -29,7 +29,7 @@ function createPinsStore() {
     subscribe,
     loadPins: async (bounds: MapBounds) => {
       const page = 1; // Fixed page value
-      const perPage = 200; // Fixed perPage value
+      const perPage = 800; // Fixed perPage value
       try {
         // Create a date 12 hours from now for the upper bound
         const endDate = new Date();
@@ -40,7 +40,7 @@ function createPinsStore() {
         const eventsResult = await client.collection('events').getList<EventsResponse>(
           page,
           perPage,
-          { filter }
+          { filter, skipTotal: true }
         );
 
         // Enhance events with coordinates helper
