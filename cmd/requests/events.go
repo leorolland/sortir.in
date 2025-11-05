@@ -1,13 +1,12 @@
 package requests
 
 import (
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"time"
 
 	"github.com/leorolland/sortir.in/pkg/application"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -17,28 +16,45 @@ func PutEvents(e *core.RequestEvent) error {
 		return e.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
-	eventsCollection, err := e.App.FindCollectionByNameOrId("events")
-	if err != nil {
-		return e.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to find events collection: " + err.Error()})
-	}
-
 	for _, event := range events {
-		eventRecord, err := e.App.FindFirstRecordByData(eventsCollection, "name", event.Name)
+		genresJSON, err := json.Marshal(event.Genres)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				err = createEvent(e, eventsCollection, event)
-				if err != nil {
-					return e.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create event: " + err.Error()})
-				}
-
-				continue
-			} else {
-
-				return e.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed check if event already exists: " + err.Error()})
-			}
+			return e.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to marshal genres: " + err.Error()})
 		}
 
-		err = updateEvent(e, eventRecord, event)
+		priceFloat := 0.0
+		if event.Price != nil {
+			priceFloat = *event.Price
+		}
+
+		currencyString := ""
+		if event.PriceCurrency != nil {
+			currencyString = *event.PriceCurrency
+		}
+
+		_, err = e.App.DB().NewQuery(`
+			INSERT INTO events (name, kind, genres, begin, end, place, address, price, price_currency)
+			VALUES ({:name}, {:kind}, {:genres}, {:begin}, {:end}, {:place}, {:address}, {:price}, {:price_currency})
+			ON CONFLICT (name) DO UPDATE SET
+				kind = {:kind},
+				genres = {:genres},
+				begin = {:begin},
+				end = {:end},
+				place = {:place},
+				address = {:address},
+				price = {:price},
+				price_currency = {:price_currency}
+		`).Bind(dbx.Params{
+			"name":           event.Name,
+			"kind":           event.Kind,
+			"genres":         genresJSON,
+			"begin":          event.Begin.Format(time.RFC3339),
+			"end":            event.End.Format(time.RFC3339),
+			"place":          event.Place,
+			"address":        event.Address,
+			"price":          priceFloat,
+			"price_currency": currencyString,
+		}).Execute()
 		if err != nil {
 			return e.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update event: " + err.Error()})
 		}
