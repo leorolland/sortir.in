@@ -22,6 +22,15 @@ func PutEvents(e *core.RequestEvent) error {
 			return e.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to marshal genres: " + err.Error()})
 		}
 
+		locJSON, err := json.Marshal(event.Loc)
+		if err != nil {
+			return e.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to marshal loc: " + err.Error()})
+		}
+
+		if !event.IsValid() {
+			continue
+		}
+
 		priceFloat := 0.0
 		if event.Price != nil {
 			priceFloat = *event.Price
@@ -33,13 +42,14 @@ func PutEvents(e *core.RequestEvent) error {
 		}
 
 		_, err = e.App.DB().NewQuery(`
-			INSERT INTO events (name, kind, genres, begin, end, place, address, price, price_currency)
-			VALUES ({:name}, {:kind}, {:genres}, {:begin}, {:end}, {:place}, {:address}, {:price}, {:price_currency})
+			INSERT INTO events (name, kind, genres, begin, end, loc, place, address, price, price_currency)
+			VALUES ({:name}, {:kind}, {:genres}, {:begin}, {:end}, {:loc}, {:place}, {:address}, {:price}, {:price_currency})
 			ON CONFLICT (name) DO UPDATE SET
 				kind = {:kind},
 				genres = {:genres},
 				begin = {:begin},
 				end = {:end},
+				loc = {:loc},
 				place = {:place},
 				address = {:address},
 				price = {:price},
@@ -50,6 +60,7 @@ func PutEvents(e *core.RequestEvent) error {
 			"genres":         genresJSON,
 			"begin":          event.Begin.Format(time.RFC3339),
 			"end":            event.End.Format(time.RFC3339),
+			"loc":            locJSON,
 			"place":          event.Place,
 			"address":        event.Address,
 			"price":          priceFloat,
