@@ -55,9 +55,15 @@ func main() {
 
 	webauthn.Register(app)
 
+	app.Cron().MustAdd("hourly_delete_expired_events", "0 * * * *", func() {
+		_, err := app.DB().NewQuery("DELETE FROM events WHERE end < datetime('now')").Execute()
+		if err != nil {
+			app.Logger().Error("failed to delete expired events", "error", err)
+		}
+	})
+
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		se.Router.GET("/{path...}", apis.Static(ui.BuildDirFS, true)).Bind(apis.Gzip())
-
 		se.Router.PUT("/api/events", requests.PutEvents)
 
 		return se.Next()
