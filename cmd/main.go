@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/leorolland/sortir.in/cmd/requests"
 	"github.com/leorolland/sortir.in/cmd/webauthn"
 	"github.com/leorolland/sortir.in/ui"
 
@@ -56,6 +57,8 @@ func main() {
 
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		se.Router.GET("/{path...}", apis.Static(ui.BuildDirFS, true)).Bind(apis.Gzip())
+
+		se.Router.PUT("/api/events", requests.PutEvents)
 
 		return se.Next()
 	})
