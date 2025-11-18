@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/leorolland/sortir.in/pkg/application"
+	"golang.org/x/text/unicode/norm"
 )
 
 type bobineCollector struct {
@@ -20,6 +23,18 @@ func NewBobineCollector() application.Collector {
 			Timeout: 10 * time.Second,
 		},
 	}
+}
+
+func removeAccents(s string) string {
+	t := norm.NFD.String(s)
+	result := make([]rune, 0, len(t))
+	for _, r := range t {
+		if unicode.IsMark(r) {
+			continue
+		}
+		result = append(result, r)
+	}
+	return string(result)
 }
 
 type bobineMovie struct {
@@ -35,6 +50,26 @@ type bobineMovie struct {
 	Genres      *string `json:"genres"`
 	MainLang    string  `json:"main_lang"`
 	ForChildren bool    `json:"for_children"`
+}
+
+func (m *bobineMovie) GetTitle() string {
+	if m.TitleVF != "" {
+		return m.TitleVF
+	}
+	return m.TitleVO
+}
+
+func (m *bobineMovie) GetURL() string {
+	titleVF := strings.ToLower(strings.ReplaceAll(m.TitleVF, " ", "-"))
+	titleVF = removeAccents(titleVF)
+	return fmt.Sprintf("https://bobine.art/film/%s-%d", m.TitleVO, m.ID)
+}
+
+func (m *bobineMovie) GetGenres() []string {
+	if m.Genres == nil {
+		return []string{"movie"}
+	}
+	return strings.Split(*m.Genres, ", ")
 }
 
 type bobineShowtime struct {
@@ -56,6 +91,14 @@ type bobineTheater struct {
 	Showtimes []bobineShowtime `json:"showtimes"`
 }
 
+func (t *bobineTheater) GetPriceCurrency() *string {
+	if t.FullPrice > 0 {
+		currency := "EUR"
+		return &currency
+	}
+	return nil
+}
+
 type bobineResponse struct {
 	Movie    bobineMovie     `json:"movie"`
 	Theaters []bobineTheater `json:"theaters"`
@@ -67,11 +110,9 @@ func (c *bobineCollector) Collect(location application.CollectLocation) ([]appli
 	allEvents := []application.Event{}
 
 	for {
-		// Format dates in the required format (YYYY-MM-DDThh:mm:ssZ)
-		// Start date is 2 days ago
-		startDate := time.Now().AddDate(0, 0, -2).UTC().Format("2006-01-02T15:04:05Z")
-		// End date must be within 7 days of start date per API requirement
-		endDate := time.Now().AddDate(0, 0, 5).UTC().Format("2006-01-02T15:04:05Z")
+		// Search for showtimes in the next 2 days
+		startDate := time.Now().UTC().Format("2006-01-02T15:04:05Z")
+		endDate := time.Now().AddDate(0, 0, 2).UTC().Format("2006-01-02T15:04:05Z")
 
 		// Build the URL with query parameters
 		baseURL := "https://bobine.art/api/showtimes/search"
@@ -133,53 +174,27 @@ func toBobineEvents(bobineResp []bobineResponse) ([]application.Event, error) {
 	for _, movieData := range bobineResp {
 		movie := movieData.Movie
 
-		// Extract genres as a slice
-		var genres []string
-		if movie.Genres != nil {
-			// Split by comma if genres is not nil
-			genres = []string{*movie.Genres}
-		} else {
-			genres = []string{"movie"}
-		}
-
-		// Process each theater
 		for _, theater := range movieData.Theaters {
-			// Process each showtime
 			for _, showtime := range theater.Showtimes {
-				// Calculate end time based on movie duration
 				endTime := showtime.Showtime.Add(time.Duration(movie.Duration) * time.Minute)
-
-				// Determine movie title (prefer VF if available, otherwise use VO)
-				title := movie.TitleVF
-				if title == "" {
-					title = movie.TitleVO
-				}
-
-				// Create price pointer
 				price := theater.FullPrice
 
-				// Create event
 				event := application.Event{
-					Name:   title,
+					Name:   movie.GetTitle(),
 					Kind:   "movie",
-					Genres: genres,
+					Genres: movie.GetGenres(),
 					Begin:  showtime.Showtime,
 					End:    endTime,
 					Loc: application.EventLocation{
 						Lat: theater.Latitude,
 						Lon: theater.Longitude,
 					},
-					Place:   theater.Name,
-					Address: theater.Address,
-					Price:   &price,
-					Source:  fmt.Sprintf("https://bobine.art/movie/%d", movie.ID),
-					Img:     movie.PosterPath,
-				}
-
-				// Add currency if price is set
-				if price > 0 {
-					currency := "EUR"
-					event.PriceCurrency = &currency
+					Place:         theater.Name,
+					Address:       theater.Address,
+					Price:         &price,
+					PriceCurrency: theater.GetPriceCurrency(),
+					Source:        movie.GetURL(),
+					Img:           movie.PosterPath,
 				}
 
 				events = append(events, event)
