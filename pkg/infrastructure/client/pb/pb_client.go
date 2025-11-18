@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/leorolland/sortir.in/pkg/application"
 )
@@ -22,49 +21,8 @@ func NewPBClient(baseURL string) *pbClient {
 	}
 }
 
-type saveEventLocation struct {
-	Lat float64 `json:"lat"`
-	Lon float64 `json:"lon"`
-}
-
-type saveEventRequestEntry struct {
-	Name          string            `json:"name"`
-	Kind          string            `json:"kind"`
-	Genres        []string          `json:"genres"`
-	Begin         time.Time         `json:"begin"`
-	End           time.Time         `json:"end"`
-	Loc           saveEventLocation `json:"loc"`
-	Place         string            `json:"place"`
-	Address       string            `json:"address"`
-	Price         *float64          `json:"price,omitempty"`
-	PriceCurrency *string           `json:"price_currency,omitempty"`
-	Source        string            `json:"source"`
-	Img           string            `json:"img"`
-}
-
 func (c *pbClient) SaveEvents(events []application.Event) error {
-	eventsRequest := make([]saveEventRequestEntry, len(events))
-	for i, event := range events {
-		eventsRequest[i] = saveEventRequestEntry{
-			Name:          event.Name,
-			Kind:          event.Kind,
-			Genres:        event.Genres,
-			Begin:         event.Begin,
-			End:           event.End,
-			Place:         event.Place,
-			Address:       event.Address,
-			Price:         event.Price,
-			PriceCurrency: event.PriceCurrency,
-			Source:        event.Source,
-			Img:           event.Img,
-			Loc: saveEventLocation{
-				Lat: event.Loc.Lat,
-				Lon: event.Loc.Lon,
-			},
-		}
-	}
-
-	jsonData, err := json.Marshal(eventsRequest)
+	jsonData, err := json.Marshal(events)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}

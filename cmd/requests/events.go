@@ -42,8 +42,8 @@ func PutEvents(e *core.RequestEvent) error {
 		}
 
 		_, err = e.App.DB().NewQuery(`
-			INSERT INTO events (name, kind, genres, begin, end, loc, place, address, price, price_currency)
-			VALUES ({:name}, {:kind}, {:genres}, {:begin}, {:end}, {:loc}, {:place}, {:address}, {:price}, {:price_currency})
+			INSERT INTO events (name, kind, genres, begin, end, loc, place, address, price, price_currency, source, img)
+			VALUES ({:name}, {:kind}, {:genres}, {:begin}, {:end}, {:loc}, {:place}, {:address}, {:price}, {:price_currency}, {:source}, {:img})
 			ON CONFLICT (name) DO UPDATE SET
 				kind = {:kind},
 				genres = {:genres},
@@ -53,7 +53,9 @@ func PutEvents(e *core.RequestEvent) error {
 				place = {:place},
 				address = {:address},
 				price = {:price},
-				price_currency = {:price_currency}
+				price_currency = {:price_currency},
+				source = {:source},
+				img = {:img}
 		`).Bind(dbx.Params{
 			"name":           event.Name,
 			"kind":           event.Kind,
@@ -65,6 +67,8 @@ func PutEvents(e *core.RequestEvent) error {
 			"address":        event.Address,
 			"price":          priceFloat,
 			"price_currency": currencyString,
+			"source":         event.Source,
+			"img":            event.Img,
 		}).Execute()
 		if err != nil {
 			return e.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update event: " + err.Error()})
