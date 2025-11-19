@@ -11,6 +11,7 @@
   import MapSidebar from '$lib/components/MapSidebar.svelte';
   import { eventsToGeoJSON } from '$lib/utils/geoJsonUtils';
   import EventPopup from '$lib/components/EventPopup.svelte';
+  import DateRangeSelector from '$lib/components/DateRangeSelector.svelte';
   // @ts-ignore
   import type { Feature, Geometry } from 'geojson';
 
@@ -65,6 +66,8 @@
     {pins}
     bind:collapsed={sidebarCollapsed}
   />
+
+  <DateRangeSelector />
 
 
   <MapLibre
@@ -128,7 +131,7 @@
             'movie', 'rgb(94, 37, 207)',
             '#2196f3'  // default color
           ] as any,
-          'circle-radius': 10,
+          'circle-radius': 8,
         }}
       >
         <Popup openOn="click">
