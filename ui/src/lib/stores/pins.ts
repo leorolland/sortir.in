@@ -31,9 +31,9 @@ function createPinsStore() {
       const page = 1; // Fixed page value
       const perPage = 800; // Fixed perPage value
       try {
-        // Create a date 12 hours from now for the upper bound
+        // Create a date 24 hours from now for the upper bound
         const endDate = new Date();
-        endDate.setHours(endDate.getHours() + 12);
+        endDate.setHours(endDate.getHours() + 24);
 
         const filter = `(begin<'${endDate.toISOString()}'&&loc.lat>${bounds.getSouth()}&&loc.lat<${bounds.getNorth()}&&loc.lon<${bounds.getEast()}&&loc.lon>${bounds.getWest()})`;
 

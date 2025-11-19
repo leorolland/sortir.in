@@ -2,6 +2,7 @@
   import { getRelativeTimeDisplay } from '$lib/utils/dateUtils';
   import type { EventWithCoordinates } from '$lib/stores/pins';
   import type { Map as MaplibreMap } from 'maplibre-gl';
+  import FloatingPanel from './FloatingPanel.svelte';
 
   export let map: MaplibreMap | undefined;
   export let pins: EventWithCoordinates[] = [];
@@ -40,46 +41,48 @@
     </button>
   {/if}
   <div class="sidebar {collapsed ? 'collapsed' : ''}">
-    <div class="sidebar-content">
-      <h2 class="sidebar-title">Événements</h2>
-      <div class="events-list">
-        {#if sortedEvents.length > 0}
-          {#each sortedEvents as event}
-            <button
-              class="event-item"
-              onclick={() => {
-                if (map) {
-                  const coordinates = event.getCoordinates();
-                  map.flyTo({
-                    center: coordinates,
-                    speed: 1.2,
-                    curve: 1.4,
-                    essential: true
-                  });
-                }
-              }}
-            >
-              <div class="event-name">{event.name}</div>
-              <div class="event-time">{getRelativeTimeDisplay(event.begin, event.end)}</div>
-            </button>
-          {/each}
-        {:else}
-          <div class="no-events-message">
-            Aucun évènement dans cette zone
-          </div>
+    <FloatingPanel withAnimation scrollable className="sidebar-floating-panel">
+      <div class="sidebar-inner-content">
+        <h2 class="sidebar-title">Événements</h2>
+        <div class="events-list">
+          {#if sortedEvents.length > 0}
+            {#each sortedEvents as event}
+              <button
+                class="event-item"
+                onclick={() => {
+                  if (map) {
+                    const coordinates = event.getCoordinates();
+                    map.flyTo({
+                      center: coordinates,
+                      speed: 1.2,
+                      curve: 1.4,
+                      essential: true
+                    });
+                  }
+                }}
+              >
+                <div class="event-name">{event.name}</div>
+                <div class="event-time">{getRelativeTimeDisplay(event.begin, event.end)}</div>
+              </button>
+            {/each}
+          {:else}
+            <div class="no-events-message">
+              Aucun évènement dans cette zone
+            </div>
+          {/if}
+        </div>
+        {#if !collapsed}
+          <button
+            type="button"
+            class="sidebar-toggle"
+            onclick={toggleSidebar}
+            aria-label="Fermer le panneau latéral"
+          >
+            <span class="close-icon">×</span>
+          </button>
         {/if}
       </div>
-      {#if !collapsed}
-        <button
-          type="button"
-          class="sidebar-toggle"
-          onclick={toggleSidebar}
-          aria-label="Fermer le panneau latéral"
-        >
-          <span class="close-icon">×</span>
-        </button>
-      {/if}
-    </div>
+    </FloatingPanel>
   </div>
 </div>
 
@@ -105,14 +108,8 @@
     height: auto;
     min-height: 200px;
     max-height: calc(100% - 40px);
-    transition: transform 100ms ease, height 400ms cubic-bezier(0.25, 1, 0.5, 1), max-height 400ms cubic-bezier(0.25, 1, 0.5, 1);
+    transition: transform 100ms ease;
     pointer-events: auto;
-    background: rgba(240, 240, 245, 0.7);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border-radius: 24px;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
   }
@@ -121,21 +118,26 @@
     transform: translateX(-420px);
   }
 
-  /* Content area */
-  .sidebar-content {
+  :global(.sidebar-floating-panel) {
     width: 100%;
-    flex: 1;
-    padding: 24px;
-    box-sizing: border-box;
+    height: 100%;
+    min-height: 200px;
+    max-height: calc(100% - 40px);
+  }
+
+  /* Inner content */
+  .sidebar-inner-content {
+    width: 100%;
+    height: 100%;
+    position: relative;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
-    max-height: 100%;
   }
 
-  .sidebar-content::-webkit-scrollbar {
+  .sidebar-inner-content::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
   }
 
@@ -220,6 +222,13 @@
     padding: 5px 0;
     flex: 1;
     transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .events-list::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
 
   /* Event item */
