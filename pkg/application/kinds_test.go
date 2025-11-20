@@ -15,7 +15,8 @@ func TestKindFromStringSuccess(t *testing.T) {
 		{input: "dance", expected: KindParty},
 		{input: "live-music", expected: KindParty},
 		{input: "karaoke", expected: KindKaraoke},
-		{input: "meetup", expected: KindMeetup},
+		{input: "meetups", expected: KindBusiness},
+		{input: "workshops", expected: KindBusiness},
 		{input: "unknown", expected: KindUnknown},
 		{input: "foo bar", expected: KindUnknown},
 	}
