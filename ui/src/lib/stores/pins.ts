@@ -61,8 +61,8 @@ function createPinsStore() {
         break;
       case DateRange.TOMORROW:
         // End of tomorrow
-        maxDate.setDate(maxDate.getDate() + 1);
-        maxDate.setHours(23, 59, 59, 999);
+        maxDate.setDate(maxDate.getDate() + 2);
+        maxDate.setHours(6, 0, 0, 0);
         break;
       case DateRange.THIS_WEEK:
         // End of the week (next Sunday)
