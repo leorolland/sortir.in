@@ -9,7 +9,7 @@ type EventLocation struct {
 
 type Event struct {
 	Name          string
-	Kind          string
+	Kind          Kind
 	Genres        []string
 	Begin         time.Time
 	End           time.Time
