@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/leorolland/sortir.in/cmd/requests"
 	"github.com/leorolland/sortir.in/cmd/webauthn"
@@ -11,6 +12,7 @@ import (
 
 	_ "github.com/leorolland/sortir.in/migrations"
 
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -55,8 +57,8 @@ func main() {
 
 	webauthn.Register(app)
 
-	app.Cron().MustAdd("hourly_delete_expired_events", "0 * * * *", func() {
-		_, err := app.DB().NewQuery("DELETE FROM events WHERE end < datetime('now')").Execute()
+	app.Cron().MustAdd("hourly_delete_expired_events", "* * * * *", func() {
+		_, err := app.DB().Delete("events", dbx.NewExp("end < {:now}", dbx.Params{"now": time.Now().Format("2006-01-02 15:04:05")})).Execute()
 		if err != nil {
 			app.Logger().Error("failed to delete expired events", "error", err)
 		}
