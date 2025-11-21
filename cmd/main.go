@@ -57,7 +57,7 @@ func main() {
 
 	webauthn.Register(app)
 
-	app.Cron().MustAdd("hourly_delete_expired_events", "* * * * *", func() {
+	app.Cron().MustAdd("delete_expired_events_cron", "* * * * *", func() {
 		_, err := app.DB().Delete("events", dbx.NewExp("end < {:now}", dbx.Params{"now": time.Now().Format("2006-01-02 15:04:05")})).Execute()
 		if err != nil {
 			app.Logger().Error("failed to delete expired events", "error", err)
