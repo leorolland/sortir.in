@@ -93,7 +93,7 @@
     top: 0;
     left: 0;
     height: 100%;
-    z-index: 1;
+    z-index: 11;
     pointer-events: none;
     padding: 20px;
     box-sizing: border-box;
@@ -115,7 +115,7 @@
   }
 
   .sidebar.collapsed {
-    transform: translateX(-420px);
+    transform: translateX(-450px);
   }
 
   :global(.sidebar-floating-panel) {
@@ -199,7 +199,6 @@
     font-size: 22px;
     padding: 0;
     color: #007AFF;
-    margin-left: 10px;
     transition: all 0.2s ease;
     pointer-events: auto;
   }

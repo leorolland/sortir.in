@@ -18,7 +18,7 @@
 
   const pins = $derived($pinsStore);
   let map = $state<MaplibreMap | undefined>(undefined);
-  let sidebarCollapsed = $state<boolean>(false);
+  let sidebarCollapsed = $state<boolean>(window.innerWidth < 768);
   let geoJsonData = $state(eventsToGeoJSON([]));
 
   function loadPinImages() {
