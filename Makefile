@@ -5,7 +5,7 @@ MODD := $(shell which modd 2>/dev/null || echo "modd")
 NPX := $(shell which npx 2>/dev/null || echo "npx")
 NPM := $(shell which npm 2>/dev/null || echo "npm")
 
-.PHONY: install dev dev-ui build clean
+.PHONY: install dev dev-ui build clean generate
 
 install:
 	$(GO) mod download
@@ -30,3 +30,6 @@ build: ui/build
 clean:
 	rm -f $(BINARY_NAME)
 	rm -rf ui/build pb_data
+
+generate:
+	$(GO) generate ./...

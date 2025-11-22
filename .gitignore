@@ -3,6 +3,7 @@
 .npm
 .env
 .ash_history
+.vscode
 /docker-compose.override.yml
 pbsk.code-workspace
 

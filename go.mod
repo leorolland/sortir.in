@@ -4,6 +4,7 @@ go 1.25
 
 require (
 	github.com/go-webauthn/webauthn v0.14.0
+	github.com/golang/mock v1.6.0
 	github.com/pocketbase/dbx v1.11.0
 	github.com/pocketbase/pocketbase v0.31.0
 	github.com/spf13/cobra v1.10.1
