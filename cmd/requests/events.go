@@ -44,11 +44,9 @@ func PutEvents(e *core.RequestEvent) error {
 		_, err = e.App.DB().NewQuery(`
 			INSERT INTO events (name, kind, genres, begin, end, loc, place, address, price, price_currency, source, img)
 			VALUES ({:name}, {:kind}, {:genres}, {:begin}, {:end}, {:loc}, {:place}, {:address}, {:price}, {:price_currency}, {:source}, {:img})
-			ON CONFLICT (name) DO UPDATE SET
+			ON CONFLICT (name, begin, end) DO UPDATE SET
 				kind = {:kind},
 				genres = {:genres},
-				begin = {:begin},
-				end = {:end},
 				loc = {:loc},
 				place = {:place},
 				address = {:address},
