@@ -19,34 +19,46 @@ const (
 	KindSports         Kind = "sports"
 	KindExhibitions    Kind = "exhibitions"
 	KindHealthWellness Kind = "health-wellness"
+	KindCircus         Kind = "circus"
+	KindWorkshop       Kind = "workshop"
+	KindFleaMarket     Kind = "flea-market"
+	KindSolidarity     Kind = "solidarity"
 )
 
 func KindFromString(s string) Kind {
 	s = strings.ToLower(s)
 
 	switch s {
-	case "concert", "concerts":
-		return KindConcert
-	case "theater", "theaters":
-		return KindTheater
-	case "movie", "movies":
+	case "movie", "movies", "ecrans":
 		return KindMovie
+	case "concert", "concerts", "spectacle musical":
+		return KindConcert
 	case "festival", "festivals":
 		return KindFestival
-	case "party", "dance", "live-music", "parties":
+	case "theater", "theaters", "théâtre", "humour":
+		return KindTheater
+	case "solidarité":
+		return KindSolidarity
+	case "party", "dance", "live-music", "parties", "danse":
 		return KindParty
 	case "karaoke":
 		return KindKaraoke
 	case "business", "meetups", "workshops":
 		return KindBusiness
-	case "food-drinks":
+	case "food-drinks", "gourmand":
 		return KindFoodDrinks
-	case "sports":
+	case "sports", "sport":
 		return KindSports
-	case "exhibitions":
+	case "exhibitions", "expo", "conférence", "salon", "art contemporain":
 		return KindExhibitions
 	case "health-wellness":
 		return KindHealthWellness
+	case "cirque":
+		return KindCircus
+	case "workshop", "atelier", "littérature", "enfants", "loisirs", "nature":
+		return KindWorkshop
+	case "marché", "brocante":
+		return KindFleaMarket
 	}
 	return KindUnknown
 }
