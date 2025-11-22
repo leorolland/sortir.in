@@ -25,6 +25,7 @@ func main() {
 	compositeCollector := collector.NewCompositeCollector(
 		collector.NewAllEventsCollector(),
 		collector.NewBobineCollector(),
+		collector.NewParisEventsCollector(),
 	)
 
 	eventSaver := pb.NewPBClient("http://localhost:8090")
