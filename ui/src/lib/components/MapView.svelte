@@ -4,22 +4,28 @@
   import CircleLayer from 'svelte-maplibre/CircleLayer.svelte';
   import SymbolLayer from 'svelte-maplibre/SymbolLayer.svelte';
   import Popup from 'svelte-maplibre/Popup.svelte';
-  import { pinsStore, type EventWithCoordinates } from '$lib/stores/pins';
+  import { pinsStore, type Pin } from '$lib/stores/pins';
   import 'maplibre-gl/dist/maplibre-gl.css';
   import type { Map as MaplibreMap } from 'maplibre-gl';
   import { GeolocateControl } from 'maplibre-gl';
   import MapSidebar from '$lib/components/MapSidebar.svelte';
-  import { eventsToGeoJSON } from '$lib/utils/geoJsonUtils';
+  import { pinsToGeoJSON } from '$lib/utils/geoJsonUtils';
   import EventPopup from '$lib/components/EventPopup.svelte';
   import DateRangeSelector from '$lib/components/DateRangeSelector.svelte';
   // @ts-ignore
   import type { Feature, Geometry } from 'geojson';
   import { pinSVGs } from '$lib/components/pins/svg';
+  import { writable } from 'svelte/store';
+  import { DateRange, getMaxDateForRange } from '$lib/utils/dateUtils';
 
   const pins = $derived($pinsStore);
   let map = $state<MaplibreMap | undefined>(undefined);
   let sidebarCollapsed = $state<boolean>(window.innerWidth < 768);
-  let geoJsonData = $state(eventsToGeoJSON([]));
+  let geoJsonData = $state(pinsToGeoJSON([]));
+  let initialized = $state(false);
+
+  // Create a store for the selected date range
+  export const selectedDateRange = writable<DateRange>(DateRange.TODAY);
 
   function loadPinImages() {
     if (!map) return;
@@ -41,9 +47,13 @@
 
   async function updatePins() {
     if (!map) return;
-    const events = await pinsStore.loadPins(map.getBounds());
-    geoJsonData = eventsToGeoJSON(events);
+
+    const maxDate = getMaxDateForRange($selectedDateRange);
+    const pins = await pinsStore.loadPins(map.getBounds(), maxDate);
+
+    geoJsonData = pinsToGeoJSON(pins);
   }
+
 
   $effect(() => {
     if (!map) return;
@@ -51,25 +61,55 @@
     map.on('moveend', updatePins);
     map.on('load', loadPinImages);
 
-    updatePins();
-    loadPinImages();
+    const handleMapClick = (e: any) => {
+      if (!map) return;
 
-    // Add geolocate control to the map
-    map.addControl(
-      new GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true
-        },
-        trackUserLocation: true,
-        showAccuracyCircle: true,
-        showUserLocation: true
-      }),
-      'top-right'
-    );
+      const features = map.queryRenderedFeatures(e.point, { layers: ['event_points'] });
+
+      if (features.length > 0) {
+        const feature = features[0];
+        if (feature.geometry && feature.geometry.type === 'Point') {
+          const coordinates = feature.geometry.coordinates.slice();
+          const amount = feature.properties?.amount;
+
+          const screenFactor = 0.0011*window.outerHeight; // factor to adjust the offsetY to the screen height
+          const offsetY = (-100*screenFactor) - (Math.min(3, amount/5)*80*screenFactor);
+
+          map.flyTo({
+            center: coordinates as [number, number],
+            duration: 300,
+            freezeElevation: true,
+            offset: [0, offsetY],
+            padding: window.outerHeight,
+          });
+        }
+      }
+    };
+
+    map.on('click', handleMapClick);
+
+    if (!initialized) {
+      loadPinImages();
+      map.addControl(
+        new GeolocateControl({
+          positionOptions: {
+            enableHighAccuracy: true
+          },
+          trackUserLocation: true,
+          showAccuracyCircle: true,
+          showUserLocation: true
+        }),
+        'top-right'
+      );
+      initialized = true;
+    }
+
+    updatePins();
 
     return () => {
       map?.off('moveend', updatePins);
       map?.off('load', loadPinImages);
+      map?.off('click', handleMapClick);
     };
   });
 
@@ -83,7 +123,7 @@
       prevPinsLength = pins.length;
       prevPinsString = currentPinsString;
 
-      geoJsonData = eventsToGeoJSON(pins);
+      geoJsonData = pinsToGeoJSON(pins);
     }
   });
 </script>
@@ -95,8 +135,7 @@
     bind:collapsed={sidebarCollapsed}
   />
 
-  <DateRangeSelector />
-
+  <DateRangeSelector selectedDateRange={selectedDateRange} />
 
   <MapLibre
     center={[-1.6794, 48.1147]}
@@ -181,8 +220,8 @@
         }}
       >
         <Popup openOn="click">
-          {#snippet children({ data }: { data: Feature<Geometry, EventWithCoordinates> | undefined })}
-            <EventPopup feature={data ?? undefined} />
+          {#snippet children({ data }: { data: Feature<Geometry, Pin> | undefined })}
+            <EventPopup feature={data ?? undefined} dateRange={$selectedDateRange} />
           {/snippet}
         </Popup>
       </SymbolLayer>

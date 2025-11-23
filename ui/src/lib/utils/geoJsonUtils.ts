@@ -1,24 +1,20 @@
-import type { EventWithCoordinates } from '$lib/stores/pins';
+import type { Pin } from '$lib/stores/pins';
 // @ts-ignore
-import type { Feature, FeatureCollection } from 'geojson';
+import type { Feature, FeatureCollection, Geometry } from 'geojson';
 
 /**
- * Converts an array of EventWithCoordinates to a GeoJSON FeatureCollection
+ * Converts an array of Pin to a GeoJSON FeatureCollection
  */
-export function eventsToGeoJSON(events: EventWithCoordinates[]): FeatureCollection {
-  const features: Feature[] = events.map(event => {
-    const coordinates = event.getCoordinates();
-
+export function pinsToGeoJSON(pins: Pin[]): FeatureCollection {
+  const features: Feature[] = pins.map(pin => {
     return {
       type: 'Feature',
       geometry: {
         type: 'Point',
-        coordinates: coordinates
+        coordinates: [pin.loc.lon, pin.loc.lat]
       },
-      properties: {
-        ...event
-      }
-    };
+      properties: pin
+    } as Feature<Geometry, Pin>;
   });
 
   return {

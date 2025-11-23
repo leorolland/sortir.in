@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { writable } from 'svelte/store';
+  import { type Writable } from 'svelte/store';
   import FloatingPanel from './FloatingPanel.svelte';
-  import { pinsStore } from '$lib/stores/pins';
   import { onMount } from 'svelte';
 
   // Date range options
-  import { DateRange } from '$lib/stores/pins';
+  import { DateRange } from '$lib/utils/dateUtils';
 
-  // Create a store for the selected range
-  export const selectedDateRange = writable<DateRange>(DateRange.TODAY);
+  // Accept the selected date range as a prop
+  export let selectedDateRange: Writable<DateRange>;
 
   // Get the appropriate label based on time of day
   function getTodayLabel(): string {
@@ -19,14 +18,6 @@
   }
 
   let todayLabel = getTodayLabel();
-
-  // Update the pins store when the date range changes
-  selectedDateRange.subscribe(async (range) => {
-    if (typeof window === 'undefined') return; // Skip during SSR
-
-    // Update pins with the new date range
-    await pinsStore.updateDateRange(range);
-  });
 
   // Update the today label when mounted
   onMount(() => {

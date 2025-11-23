@@ -48,6 +48,8 @@
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
     height: 100%;
+    max-width: none;
+    width: auto;
   }
 
   .floating-panel-content::-webkit-scrollbar {
