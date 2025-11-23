@@ -1,6 +1,8 @@
 package application
 
-import "time"
+import (
+	"time"
+)
 
 type EventLocation struct {
 	Lat float64 `json:"lat"`
