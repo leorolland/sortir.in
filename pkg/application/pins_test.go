@@ -42,6 +42,17 @@ func TestGetPinsSuccess(t *testing.T) {
 		eventsReturned []application.Event
 		expected       []application.Pin
 	}{
+		"without events": {
+			bounds: application.Bounds{
+				North: 48.9,
+				South: 48.8,
+				East:  2.4,
+				West:  2.3,
+			},
+			maxDate:        time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			eventsReturned: []application.Event{},
+			expected:       []application.Pin{},
+		},
 		"with 1 event": {
 			bounds: application.Bounds{
 				North: 48.9,

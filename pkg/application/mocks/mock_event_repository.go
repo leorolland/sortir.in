@@ -36,10 +36,10 @@ func (m *MockEventRepository) EXPECT() *MockEventRepositoryMockRecorder {
 }
 
 // ByBoundsAndMaxDate mocks base method.
-func (m *MockEventRepository) ByBoundsAndMaxDate(arg0 application.Bounds, arg1 time.Time) ([]application.Event, error) {
+func (m *MockEventRepository) ByBoundsAndMaxDate(arg0 application.Bounds, arg1 time.Time) ([]application.Pin, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ByBoundsAndMaxDate", arg0, arg1)
-	ret0, _ := ret[0].([]application.Event)
+	ret0, _ := ret[0].([]application.Pin)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

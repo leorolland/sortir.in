@@ -5,35 +5,44 @@ import (
 
 	"github.com/leorolland/sortir.in/pkg/application"
 	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
-type EventRepository interface {
-	ByBoundsAndMaxDate(bounds application.Bounds, maxDate time.Time) ([]application.Event, error)
-}
-
 type eventRepository struct {
-	db dbx.Builder
+	db DBGetter
 }
 
-func NewEventRepository(db dbx.Builder) eventRepository {
+func NewEventRepository(db DBGetter) eventRepository {
 	return eventRepository{db: db}
 }
 
-func (r eventRepository) ByBoundsAndMaxDate(bounds application.Bounds, maxDate time.Time) ([]application.Event, error) {
-	query := r.db.Select("kind", "loc").From("events").Where(dbx.And(
-		dbx.NewExp("loc.lat >= :south", dbx.Params{"south": bounds.South}),
-		dbx.NewExp("loc.lat <= :north", dbx.Params{"north": bounds.North}),
-		dbx.NewExp("loc.lon >= :west", dbx.Params{"west": bounds.West}),
-		dbx.NewExp("loc.lon <= :east", dbx.Params{"east": bounds.East}),
-		dbx.NewExp("end <= :maxDate", dbx.Params{"maxDate": maxDate}),
-	)).Limit(1000)
+func (r eventRepository) ByBoundsAndMaxDate(bounds application.Bounds, maxDate time.Time) ([]application.Pin, error) {
+	query := r.db.Get().Select("kind", "loc").From("events").Where(dbx.And(
+		dbx.NewExp("json_extract(loc, '$.lat') >= {:south}", dbx.Params{"south": bounds.South}),
+		dbx.NewExp("json_extract(loc, '$.lat') <= {:north}", dbx.Params{"north": bounds.North}),
+		dbx.NewExp("json_extract(loc, '$.lon') >= {:west}", dbx.Params{"west": bounds.West}),
+		dbx.NewExp("json_extract(loc, '$.lon') <= {:east}", dbx.Params{"east": bounds.East}),
+		dbx.NewExp("end <= {:maxDate}", dbx.Params{"maxDate": maxDate}),
+	)).Limit(5000)
 
-	var events []application.Event
+	var rows []struct {
+		Kind string                 `db:"kind"`
+		Loc  types.JSONMap[float64] `db:"loc"`
+	}
 
-	err := query.All(&events)
+	err := query.All(&rows)
 	if err != nil {
 		return nil, err
 	}
 
-	return events, nil
+	pins := make([]application.Pin, len(rows))
+	for i, row := range rows {
+		pins[i] = application.Pin{
+			Kind:   application.Kind(row.Kind),
+			Loc:    application.EventLocation{Lat: row.Loc.Get("lat"), Lon: row.Loc.Get("lon")},
+			Amount: 1,
+		}
+	}
+
+	return pins, nil
 }

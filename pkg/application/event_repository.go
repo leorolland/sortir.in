@@ -1,7 +1,5 @@
 package application
 
-//go:generate go run github.com/golang/mock/mockgen -destination=mocks/mock_event_repository.go -package=applicationmocks github.com/leorolland/sortir.in/pkg/application EventRepository
-
 import "time"
 
 type Bounds struct {
@@ -11,6 +9,7 @@ type Bounds struct {
 	West  float64
 }
 
+//go:generate go run github.com/golang/mock/mockgen -destination=mocks/mock_event_repository.go -package=applicationmocks github.com/leorolland/sortir.in/pkg/application EventRepository
 type EventRepository interface {
-	ByBoundsAndMaxDate(bounds Bounds, maxDate time.Time) ([]Event, error)
+	ByBoundsAndMaxDate(bounds Bounds, maxDate time.Time) ([]Pin, error)
 }

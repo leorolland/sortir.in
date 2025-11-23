@@ -18,7 +18,6 @@ type Pin struct {
 	Amount int           `json:"amount"`
 }
 
-// PinsService defines the interface for the pins service
 type PinsService interface {
 	GetPins(bounds Bounds, maxDate time.Time) ([]Pin, error)
 }
@@ -41,6 +40,7 @@ func (p *pins) GetPins(bounds Bounds, maxDate time.Time) ([]Pin, error) {
 
 	pinsMap := make(map[string]Pin)
 
+	// group pins at the same location and kind together
 	for _, event := range events {
 		key := getLocationKindKey(event.Loc, event.Kind)
 
