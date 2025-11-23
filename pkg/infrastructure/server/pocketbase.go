@@ -3,6 +3,8 @@ package server
 import (
 	"time"
 
+	"github.com/leorolland/sortir.in/pkg/application"
+	"github.com/leorolland/sortir.in/pkg/infrastructure/repository"
 	"github.com/leorolland/sortir.in/pkg/infrastructure/server/requests"
 	"github.com/leorolland/sortir.in/ui"
 	"github.com/pocketbase/dbx"
@@ -12,14 +14,22 @@ import (
 )
 
 func RegisterApp(app *pocketbase.PocketBase) {
+	initServices(app)
 	bindRoutes(app)
 	bindCrons(app)
+}
+
+func initServices(app *pocketbase.PocketBase) {
+	dbGetter := repository.NewDBGetter(app)
+	eventRepository := repository.NewEventRepository(dbGetter)
+	app.Store().Set("pinsService", application.NewPins(eventRepository))
 }
 
 func bindRoutes(app *pocketbase.PocketBase) {
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		se.Router.GET("/{path...}", apis.Static(ui.BuildDirFS, true)).Bind(apis.Gzip())
 		se.Router.PUT("/api/events", requests.PutEvents)
+		se.Router.GET("/api/pins", requests.GetPins)
 		return se.Next()
 	})
 }
