@@ -14,7 +14,7 @@ import (
 )
 
 func TestEventsPutSuccess(t *testing.T) {
-	t.Run("insert 1 event successfully", func(t *testing.T) {
+	t.Run("insert 2 events and then update one of them", func(t *testing.T) {
 		app := setupTestPocketBase(t)
 
 		price := 10.0
@@ -41,6 +41,23 @@ func TestEventsPutSuccess(t *testing.T) {
 				Genres:        []string{"Test Genre"},
 				Kind:          "movie",
 			},
+			{
+				Name:  "Test Event 2",
+				Begin: begin.Add(24 * time.Hour),
+				End:   end.Add(25 * time.Hour),
+				Loc: application.EventLocation{
+					Lat: 48.8566,
+					Lon: 2.3522,
+				},
+				Place:         "Test Place 2",
+				Address:       "Test Address 2",
+				Price:         &price,
+				PriceCurrency: &priceCurrency,
+				Source:        "https://example.com",
+				Img:           "https://example.com/image.jpg",
+				Genres:        []string{"Test Genre 2"},
+				Kind:          "movie",
+			},
 		})
 
 		resp, err := putEvents(t, events)
@@ -50,20 +67,39 @@ func TestEventsPutSuccess(t *testing.T) {
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 
 		records, err := app.FindAllRecords("events")
-		require.Equal(t, 1, len(records))
-		require.Equal(t, "Test Event", records[0].GetString("name"))
-		require.Equal(t, begin.Unix(), records[0].GetDateTime("begin").Time().Unix())
-		require.Equal(t, end.Unix(), records[0].GetDateTime("end").Time().Unix())
-		require.Equal(t, 48.8566, records[0].GetGeoPoint("loc").Lat)
-		require.Equal(t, 2.3522, records[0].GetGeoPoint("loc").Lon)
-		require.Equal(t, "Test Place", records[0].GetString("place"))
-		require.Equal(t, "Test Address", records[0].GetString("address"))
-		require.Equal(t, price, records[0].GetFloat("price"))
-		require.Equal(t, priceCurrency, records[0].GetString("price_currency"))
-		require.Equal(t, "https://example.com", records[0].GetString("source"))
-		require.Equal(t, "https://example.com/image.jpg", records[0].GetString("img"))
-		require.Equal(t, []string{"Test Genre"}, records[0].GetStringSlice("genres"))
-		require.Equal(t, "movie", records[0].GetString("kind"))
+		require.NoError(t, err)
+
+		assertEqualEvents(t, events, records)
+
+		// Update the first event
+		updatedEvent := application.Event{
+			Name:  events[0].Name,
+			Begin: events[0].Begin,
+			End:   events[0].End,
+			Loc: application.EventLocation{
+				Lat: events[0].Loc.Lat + 0.0100,
+				Lon: events[0].Loc.Lon + 0.0100,
+			},
+			Place:         "updated place",
+			Address:       "updated address",
+			Price:         nil,
+			PriceCurrency: nil,
+			Source:        "updated source",
+			Img:           "updated img",
+			Genres:        []string{"updated genre"},
+			Kind:          "updated kind",
+		}
+
+		resp, err = putEvents(t, []application.Event{updatedEvent})
+		require.NoError(t, err)
+		defer resp.Body.Close()
+
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+
+		records, err = app.FindAllRecords("events")
+		require.NoError(t, err)
+
+		assertEqualEvents(t, []application.Event{updatedEvent, events[1]}, records)
 	})
 }
 

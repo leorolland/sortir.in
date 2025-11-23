@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	_ "github.com/leorolland/sortir.in/migrations"
+	"github.com/leorolland/sortir.in/pkg/application"
 	"github.com/leorolland/sortir.in/pkg/infrastructure/server"
 )
 
@@ -57,4 +58,35 @@ func setupTestPocketBase(t *testing.T) *pocketbase.PocketBase {
 	}, 5*time.Second, 20*time.Millisecond)
 
 	return app
+}
+
+func assertEqualEvent(t *testing.T, expected application.Event, actual *core.Record) {
+	require.Equal(t, expected.Name, actual.GetString("name"))
+	require.Equal(t, expected.Begin.Unix(), actual.GetDateTime("begin").Time().Unix())
+	require.Equal(t, expected.End.Unix(), actual.GetDateTime("end").Time().Unix())
+	require.Equal(t, expected.Loc.Lat, actual.GetGeoPoint("loc").Lat)
+	require.Equal(t, expected.Loc.Lon, actual.GetGeoPoint("loc").Lon)
+	require.Equal(t, expected.Address, actual.GetString("address"))
+	if expected.Price != nil {
+		require.Equal(t, *expected.Price, actual.GetFloat("price"))
+	} else {
+		require.Zero(t, actual.GetFloat("price"))
+	}
+	if expected.PriceCurrency != nil {
+		require.Equal(t, *expected.PriceCurrency, actual.GetString("price_currency"))
+	} else {
+		require.Zero(t, actual.GetString("price_currency"))
+	}
+	require.Equal(t, expected.Source, actual.GetString("source"))
+	require.Equal(t, expected.Img, actual.GetString("img"))
+	require.Equal(t, expected.Genres, actual.GetStringSlice("genres"))
+	require.Equal(t, string(expected.Kind), actual.GetString("kind"))
+	require.Equal(t, expected.Place, actual.GetString("place"))
+}
+
+func assertEqualEvents(t *testing.T, expected []application.Event, actual []*core.Record) {
+	require.Equal(t, len(expected), len(actual))
+	for i, event := range expected {
+		assertEqualEvent(t, event, actual[i])
+	}
 }
