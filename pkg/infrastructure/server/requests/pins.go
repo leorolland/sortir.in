@@ -33,7 +33,6 @@ func GetPins(e *core.RequestEvent) error {
 	}
 
 	return e.JSON(http.StatusOK, pins)
-
 }
 
 func getBoundsFromQueryParams(queryParams url.Values) (application.Bounds, error) {

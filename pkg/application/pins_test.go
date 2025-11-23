@@ -37,12 +37,23 @@ func TestGetPinsError(t *testing.T) {
 
 func TestGetPinsSuccess(t *testing.T) {
 	testCases := map[string]struct {
-		bounds         application.Bounds
-		maxDate        time.Time
-		eventsReturned []application.Event
-		expected       []application.Pin
+		bounds       application.Bounds
+		maxDate      time.Time
+		pinsReturned []application.Pin
+		expected     []application.Pin
 	}{
-		"with 1 event": {
+		"without events": {
+			bounds: application.Bounds{
+				North: 48.9,
+				South: 48.8,
+				East:  2.4,
+				West:  2.3,
+			},
+			maxDate:      time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			pinsReturned: []application.Pin{},
+			expected:     []application.Pin{},
+		},
+		"with 1 pin": {
 			bounds: application.Bounds{
 				North: 48.9,
 				South: 48.8,
@@ -50,11 +61,11 @@ func TestGetPinsSuccess(t *testing.T) {
 				West:  2.3,
 			},
 			maxDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
-			eventsReturned: []application.Event{
+			pinsReturned: []application.Pin{
 				{
-					Name: "Event 1",
-					Loc:  application.EventLocation{Lat: 48.8, Lon: 2.3},
-					Kind: application.KindConcert,
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
 				},
 			},
 			expected: []application.Pin{
@@ -65,7 +76,7 @@ func TestGetPinsSuccess(t *testing.T) {
 				},
 			},
 		},
-		"with 2 events, not in same place": {
+		"with 2 pins, not in same place": {
 			bounds: application.Bounds{
 				North: 48.9,
 				South: 48.8,
@@ -73,16 +84,16 @@ func TestGetPinsSuccess(t *testing.T) {
 				West:  2.3,
 			},
 			maxDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
-			eventsReturned: []application.Event{
+			pinsReturned: []application.Pin{
 				{
-					Name: "Event 1",
-					Loc:  application.EventLocation{Lat: 48.8, Lon: 2.3},
-					Kind: application.KindConcert,
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
 				},
 				{
-					Name: "Event 2",
-					Loc:  application.EventLocation{Lat: 48.9, Lon: 2.4},
-					Kind: application.KindConcert,
+					Loc:    application.EventLocation{Lat: 48.9, Lon: 2.4},
+					Kind:   application.KindConcert,
+					Amount: 1,
 				},
 			},
 			expected: []application.Pin{
@@ -98,7 +109,7 @@ func TestGetPinsSuccess(t *testing.T) {
 				},
 			},
 		},
-		"with 3 events, 2 in same place": {
+		"with 3 pins, 2 in same place": {
 			bounds: application.Bounds{
 				North: 48.9,
 				South: 48.8,
@@ -106,21 +117,21 @@ func TestGetPinsSuccess(t *testing.T) {
 				West:  2.3,
 			},
 			maxDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
-			eventsReturned: []application.Event{
+			pinsReturned: []application.Pin{
 				{
-					Name: "Event 1",
-					Loc:  application.EventLocation{Lat: 48.8, Lon: 2.3},
-					Kind: application.KindConcert,
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
 				},
 				{
-					Name: "Event 2",
-					Loc:  application.EventLocation{Lat: 48.8, Lon: 2.3},
-					Kind: application.KindConcert,
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
 				},
 				{
-					Name: "Event 3",
-					Loc:  application.EventLocation{Lat: 48.9, Lon: 2.4},
-					Kind: application.KindConcert,
+					Loc:    application.EventLocation{Lat: 48.9, Lon: 2.4},
+					Kind:   application.KindConcert,
+					Amount: 1,
 				},
 			},
 			expected: []application.Pin{
@@ -147,18 +158,15 @@ func TestGetPinsSuccess(t *testing.T) {
 
 			mockEventRepo.EXPECT().
 				ByBoundsAndMaxDate(tc.bounds, tc.maxDate).
-				Return(tc.eventsReturned, nil)
+				Return(tc.pinsReturned, nil)
 
 			pinsService := application.NewPins(mockEventRepo)
-
 			pins, err := pinsService.GetPins(tc.bounds, tc.maxDate)
-
 			if err != nil {
-				t.Errorf("Expected no error, got %v", err)
+				t.Fatalf("failed to get pins: %v", err)
 			}
-
 			if !reflect.DeepEqual(pins, tc.expected) {
-				t.Errorf("Expected %v, got %v", tc.expected, pins)
+				t.Fatalf("expected %v, got %v", tc.expected, pins)
 			}
 		})
 	}
