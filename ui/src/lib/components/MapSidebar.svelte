@@ -1,19 +1,35 @@
 <script lang="ts">
   import { getRelativeTimeDisplay } from '$lib/utils/dateUtils';
-  import type { EventWithCoordinates } from '$lib/stores/pins';
   import type { Map as MaplibreMap } from 'maplibre-gl';
   import FloatingPanel from './FloatingPanel.svelte';
+  import type { EventsResponse } from '$lib/pocketbase/generated-types';
+  import { onDestroy, onMount } from 'svelte';
+  import { eventsStore } from '$lib/stores/events';
 
   export let map: MaplibreMap | undefined;
-  export let pins: EventWithCoordinates[] = [];
   export let collapsed = true;
+  let events: EventsResponse[] = [];
+  let unsubscribe: () => void;
 
-  // Sort events by date (closest first)
-  $: sortedEvents = [...pins].sort((a, b) => {
-    const dateA = new Date(a.begin);
-    const dateB = new Date(b.begin);
-    return dateA.getTime() - dateB.getTime();
+  // Subscribe to events store
+  onMount(() => {
+    unsubscribe = eventsStore.subscribeEventsForBounds((value) => {
+      events = value;
+    });
   });
+
+  onDestroy(() => {
+    if (unsubscribe) unsubscribe();
+  });
+
+  // Group events by Kinds of events not terminated with kind not unknown or not movie
+  $: groupedEvents = events.
+  filter((event) => getRelativeTimeDisplay(event.begin, event.end).status !== 'Terminé').
+  filter((event) => event.kind !== 'unknown' && event.kind !== 'movie').
+  reduce((acc, event) => {
+    acc[event.kind] = [...(acc[event.kind] || []), event];
+    return acc;
+  }, {} as Record<string, EventsResponse[]>);
 
   // Function to toggle sidebar and update map padding
   function toggleSidebar() {
@@ -43,27 +59,34 @@
   <div class="sidebar {collapsed ? 'collapsed' : ''}">
     <FloatingPanel withAnimation scrollable className="sidebar-floating-panel">
       <div class="sidebar-inner-content">
-        <h2 class="sidebar-title">Événements</h2>
+        <h2 class="sidebar-title">Suggestions</h2>
         <div class="events-list">
-          {#if sortedEvents.length > 0}
-            {#each sortedEvents as event}
+          {#if events.length > 0}
+            {#each Object.keys(groupedEvents) as kind}
+              <h3 class="kind-title">{kind.charAt(0).toUpperCase() + kind.slice(1)}</h3>
+              {#each groupedEvents[kind] as event}
               <button
                 class="event-item"
                 onclick={() => {
                   if (map) {
-                    const coordinates = event.getCoordinates();
+                    const coordinates = { lat: event.loc.lat, lon: event.loc.lon };
                     map.flyTo({
                       center: coordinates,
                       speed: 1.2,
                       curve: 1.4,
+                      zoom: 15,
                       essential: true
                     });
                   }
                 }}
               >
+                {#if event.img}
+                  <img src={event.img} alt={event.name} class="event-img" />
+                {/if}
                 <div class="event-name">{event.name}</div>
-                <div class="event-time">{getRelativeTimeDisplay(event.begin, event.end)}</div>
+                <div class="event-time">{getRelativeTimeDisplay(event.begin, event.end).status}</div>
               </button>
+            {/each}
             {/each}
           {:else}
             <div class="no-events-message">
@@ -262,6 +285,13 @@
     }
   }
 
+  .kind-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+  }
+
   .event-item:hover {
     background-color: rgba(255, 255, 255, 0.7);
     transform: translateY(-2px) scale(1.01);
@@ -273,7 +303,14 @@
     background-color: rgba(255, 255, 255, 0.8);
   }
 
+  .event-img {
+    display: inline-block;
+    width: 20%;
+  }
+
   .event-name {
+    display: inline-block;
+    width: 60%;
     font-weight: 600;
     font-size: 17px;
     margin-bottom: 10px;
@@ -321,4 +358,5 @@
     animation: fadeIn 0.4s ease-out;
     transition: all 0.3s ease;
   }
+
 </style>

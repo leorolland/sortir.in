@@ -19,7 +19,7 @@
 
   // Subscribe to events store
   onMount(() => {
-    unsubscribe = eventsStore.subscribe((value) => {
+    unsubscribe = eventsStore.subscribeEventsForLocation((value) => {
       events = value;
       loading = false;
     });

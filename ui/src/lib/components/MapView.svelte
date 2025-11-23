@@ -17,6 +17,7 @@
   import { pinSVGs } from '$lib/components/pins/svg';
   import { writable } from 'svelte/store';
   import { DateRange, getMaxDateForRange } from '$lib/utils/dateUtils';
+  import { eventsStore } from '$lib/stores/events';
 
   const pins = $derived($pinsStore);
   let map = $state<MaplibreMap | undefined>(undefined);
@@ -50,6 +51,7 @@
 
     const maxDate = getMaxDateForRange($selectedDateRange);
     const pins = await pinsStore.loadPins(map.getBounds(), maxDate);
+    eventsStore.getEventsInBounds(map.getBounds(), maxDate);
 
     geoJsonData = pinsToGeoJSON(pins);
   }
@@ -130,9 +132,11 @@
 
 <div class="map-container">
   <MapSidebar
-    {map}
-    {pins}
-    bind:collapsed={sidebarCollapsed}
+    map={map}
+    pins={pins}
+    collapsed={sidebarCollapsed}
+    events={eventsStore.subscribeEventsForBounds}
+    on:collapsedChange={(e) => sidebarCollapsed = e.detail}
   />
 
   <DateRangeSelector selectedDateRange={selectedDateRange} />
