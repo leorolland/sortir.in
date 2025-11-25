@@ -117,7 +117,7 @@ func (c *bobineCollector) Collect(location application.CollectLocation) ([]appli
 		// Build the URL with query parameters
 		baseURL := "https://bobine.art/api/showtimes/search"
 		params := url.Values{}
-		params.Add("range", "10")
+		params.Add("range", "100")
 		params.Add("order_by", "next_showtime")
 		params.Add("order_dir", "asc")
 		params.Add("latitude", fmt.Sprintf("%.7f", location.Lat))
