@@ -851,7 +851,7 @@ func init() {
 					"CREATE INDEX ` + "`" + `idx_tuX5bqYCzb` + "`" + ` ON ` + "`" + `events` + "`" + ` (` + "`" + `name` + "`" + `)",
 					"CREATE INDEX ` + "`" + `idx_OD9hQVHwr1` + "`" + ` ON ` + "`" + `events` + "`" + ` (` + "`" + `begin` + "`" + `)",
 					"CREATE INDEX ` + "`" + `idx_WAV5wspmIS` + "`" + ` ON ` + "`" + `events` + "`" + ` (` + "`" + `end` + "`" + `)",
-					"-- Create the composite functional index\nCREATE INDEX idx_events_lat_lon_bbox ON events (\n    (CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lat') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lat') END),\n    (CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lon') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lon') END)\n);"
+					"CREATE INDEX idx_events_lat_lon_bbox ON events ((CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lat') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lat') END), (CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lon') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lon') END))"
 				],
 				"listRule": "",
 				"name": "events",

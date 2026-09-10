@@ -49,7 +49,11 @@ func setupTestPocketBase(t *testing.T) *pocketbase.PocketBase {
 	os.Args[1] = "serve"
 	os.Args[2] = fmt.Sprintf("--http=127.0.0.1:%d", PORT)
 
-	go app.Start()
+	go func() {
+		if err := app.Start(); err != nil {
+			t.Logf("app.Start() error: %v", err)
+		}
+	}()
 
 	// Wait for the server to be ready
 	require.EventuallyWithT(t, func(t *assert.CollectT) {

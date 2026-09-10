@@ -18,8 +18,8 @@ func init() {
 		if err := json.Unmarshal([]byte(`{
 			"indexes": [
 				"CREATE UNIQUE INDEX ` + "`" + `idx_tuX5bqYCzb` + "`" + ` ON ` + "`" + `events` + "`" + ` (\n  ` + "`" + `name` + "`" + `,\n  ` + "`" + `begin` + "`" + `,\n  ` + "`" + `end` + "`" + `\n)",
-				"-- Create the composite functional index\nCREATE INDEX idx_events_lat_lon_bbox ON events (\n    (CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lat') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lat') END),\n    (CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lon') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lon') END)\n);",
-				"CREATE INDEX idx_events_lat_lon_end\n    ON events (\n        json_extract(loc, '$.lat'),\n        json_extract(loc, '$.lon'),\n        end\n    );"
+				"CREATE INDEX idx_events_lat_lon_bbox ON events ((CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lat') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lat') END), (CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lon') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lon') END))",
+				"CREATE INDEX idx_events_lat_lon_end ON events (json_extract(loc, '$.lat'), json_extract(loc, '$.lon'), `+"`"+`end`+"`"+`)"
 			]
 		}`), &collection); err != nil {
 			return err
@@ -36,7 +36,7 @@ func init() {
 		if err := json.Unmarshal([]byte(`{
 			"indexes": [
 				"CREATE UNIQUE INDEX ` + "`" + `idx_tuX5bqYCzb` + "`" + ` ON ` + "`" + `events` + "`" + ` (\n  ` + "`" + `name` + "`" + `,\n  ` + "`" + `begin` + "`" + `,\n  ` + "`" + `end` + "`" + `\n)",
-				"-- Create the composite functional index\nCREATE INDEX idx_events_lat_lon_bbox ON events (\n    (CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lat') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lat') END),\n    (CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lon') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lon') END)\n);"
+				"CREATE INDEX idx_events_lat_lon_bbox ON events ((CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lat') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lat') END), (CASE WHEN json_valid(loc) THEN JSON_EXTRACT(loc, '$.lon') ELSE JSON_EXTRACT(json_object('pb', loc), '$.pb.lon') END))"
 			]
 		}`), &collection); err != nil {
 			return err

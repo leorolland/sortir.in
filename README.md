@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Go Version](https://img.shields.io/badge/go-1.25%2B-00ADD8.svg)
+![Go Version](https://img.shields.io/badge/go-1.27%2B-00ADD8.svg)
 ![Node Version](https://img.shields.io/badge/node-18%2B-brightgreen.svg)
 
 **Discover what's happening around you, all in one place.**
@@ -74,9 +74,9 @@ end
 ### Prerequisites
 
 Before you begin, ensure you have the following installed:
-- Go 1.25+
+- Go 1.27+
 - Node.js 18+
-- pnpm (will be used by the build process)
+- pnpm (invoked through `npx`, no global install required)
 
 ### Installation
 
@@ -90,6 +90,11 @@ This will:
 - Download Go modules
 - Install modd (Go-based file watcher for development)
 - Install UI dependencies using pnpm
+
+> [!NOTE]
+> Since pnpm v11, dependency build scripts must be explicitly approved.
+> The allowlist lives in [`ui/pnpm-workspace.yaml`](ui/pnpm-workspace.yaml) (`allowBuilds`).
+> If a new dependency ships a build script, add it there.
 
 ### Building
 
@@ -120,6 +125,28 @@ For UI-only development:
 
 ```bash
 make dev-ui
+```
+
+### Populating data
+
+The populate tool collects events for cities (in the order defined by `NewFrenchCitiesIterator`) and upserts them into the running server.
+
+First, start the server (in a separate terminal):
+
+```bash
+make dev
+```
+
+Then populate the first city (Annemasse):
+
+```bash
+go run ./cmd/populate 1
+```
+
+Or the first 10 cities:
+
+```bash
+go run ./cmd/populate 10
 ```
 
 ### Cleaning
