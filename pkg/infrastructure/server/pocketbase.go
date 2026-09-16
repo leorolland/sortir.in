@@ -30,6 +30,7 @@ func bindRoutes(app *pocketbase.PocketBase) {
 		se.Router.GET("/{path...}", apis.Static(ui.BuildDirFS, true)).Bind(apis.Gzip())
 		se.Router.PUT("/api/events", requests.PutEvents)
 		se.Router.GET("/api/pins", requests.GetPins)
+		se.Router.GET("/api/version", requests.GetVersion)
 		return se.Next()
 	})
 }

@@ -1,0 +1,9 @@
+{
+  "tagFormat": "v${version}",
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    ["@semantic-release/exec", { "prepareCmd": "make release VERSION=${nextRelease.version}" }],
+    ["@semantic-release/github", { "assets": ["release/*"] }]
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "sortir.in",
+  "private": true,
+  "packageManager": "pnpm@12.4.2",
+  "scripts": {
+    "release": "semantic-release",
+    "release:dry": "semantic-release --dry-run --no-ci"
+  },
+  "devDependencies": {
+    "@semantic-release/exec": "^7.1.0",
+    "semantic-release": "^25.0.9"
+  }
+}

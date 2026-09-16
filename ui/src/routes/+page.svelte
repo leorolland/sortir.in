@@ -6,7 +6,7 @@
   const { data } = $props();
   $effect(() => {
     // you could set the metadata either here or in +page.ts
-    $metadata.title = "sortir.cc";
+    $metadata.title = "🔍 sortir.in";
     $metadata.headline = ""; // Empty string instead of null
   });
 </script>

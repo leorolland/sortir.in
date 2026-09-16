@@ -4,114 +4,55 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-  release:
-    types: [ created ]
 
 permissions:
   contents: write
 
-jobs:
-  build:
-    name: Build and Release
-    runs-on: ubuntu-latest
+concurrency:
+  group: release-main
+  cancel-in-progress: false
 
-    strategy:
-      matrix:
-        go-version: ['1.25.x']
-        node-version: ['18.x']
+jobs:
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Go ${{ matrix.go-version }}
+      - name: Setup Go 1.25.x
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: '1.25.x'
           cache: true
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js 24.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: 'ui/pnpm-lock.yaml'
+          node-version: '24.x'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: latest
           run_install: false
 
       - name: Get Go dependencies
         run: go mod download
 
-      - name: Install UI dependencies
-        run: |
-          cd ui
-          pnpm install
+      - name: Install release tooling
+        run: pnpm install --frozen-lockfile
 
-      - name: Build UI
-        run: |
-          cd ui
-          pnpm run build
+      - name: Install UI dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ui
 
       - name: Test application
-        run: |
-          go test ./...
+        run: go test ./...
 
-      - name: Build application for multiple architectures
-        run: |
-          export GOARCH=arm64
-          go build -o sortir.linux-arm64 cmd/main.go
-          go build -o populate.linux-arm64 cmd/populate/populate.go
-
-          export GOARCH=amd64
-          go build -o sortir.linux-amd64 cmd/main.go
-          go build -o populate.linux-amd64 cmd/populate/populate.go
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: binaries
-          path: |
-            sortir.linux-arm64
-            sortir.linux-amd64
-            populate.linux-arm64
-            populate.linux-amd64
-          retention-days: 3
-
-      - name: Create release for tagged commits
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            sortir.linux-arm64
-            sortir.linux-amd64
-            populate.linux-arm64
-            populate.linux-amd64
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create/Update latest release
-        if: github.ref == 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          name: Latest Build
-          tag_name: latest
-          files: |
-            sortir.linux-arm64
-            sortir.linux-amd64
-            populate.linux-arm64
-            populate.linux-amd64
-          prerelease: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Clean up old releases
-        uses: dev-drprasad/delete-older-releases@v0.3.2
-        with:
-          keep_latest: 5
-          delete_tags: false
+      - name: Semantic release
+        run: pnpm exec semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

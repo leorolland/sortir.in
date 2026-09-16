@@ -12,6 +12,7 @@
   import { pinsToGeoJSON } from '$lib/utils/geoJsonUtils';
   import EventPopup from '$lib/components/EventPopup.svelte';
   import DateRangeSelector from '$lib/components/DateRangeSelector.svelte';
+  import AppVersion from '$lib/components/AppVersion.svelte';
   // @ts-ignore
   import type { Feature, Geometry } from 'geojson';
   import { pinSVGs } from '$lib/components/pins/svg';
@@ -140,6 +141,8 @@
   />
 
   <DateRangeSelector selectedDateRange={selectedDateRange} />
+
+  <AppVersion />
 
   <MapLibre
     center={[-1.6794, 48.1147]}

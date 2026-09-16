@@ -10,6 +10,10 @@ declare global {
     }
     // interface Platform {}
   }
+
+  interface ImportMetaEnv {
+    readonly VITE_APP_VERSION: string | undefined;
+  }
 }
 
 export {};

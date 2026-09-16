@@ -109,6 +109,18 @@ This command:
 - Embeds the UI into the Go binary
 - Compiles the Go application
 
+### Releases
+
+Every push to `main` runs [semantic-release](https://semantic-release.gitbook.io), which derives the next version from the commit messages and publishes a `vX.Y.Z` GitHub release with the linux binaries attached (`sortir.linux-amd64`, `populate.linux-amd64`).
+The version is baked at build time (`make release VERSION=x.y.z`) into both the binary (`-ldflags`, exposed as `GET /api/version`) and the UI, displayed as a badge on the map.
+
+To simulate a release locally (dry-run, nothing is published):
+
+```bash
+pnpm install
+pnpm release:dry
+```
+
 ### Development
 
 To run the application in development mode:

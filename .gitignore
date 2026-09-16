@@ -11,3 +11,5 @@ pb_data/
 pb_public/
 sortir
 populate
+release/
+node_modules/
