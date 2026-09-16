@@ -13,6 +13,8 @@ trap 'rm -rf "$workdir"' EXIT
 
 git clone --quiet "$clone_url" "$workdir"
 cd "$workdir"
+git config user.name "github-actions[bot]"
+git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 if [ -n "$base" ]; then
   git checkout --quiet -B "$branch" "origin/$base"
 else
