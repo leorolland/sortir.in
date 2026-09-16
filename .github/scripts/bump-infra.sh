@@ -4,12 +4,20 @@ set -euo pipefail
 version="v$1"
 repo="${INFRA_REPO:-leorolland/infra}"
 base="${INFRA_BASE_BRANCH:-}"
-clone_url="${INFRA_CLONE_URL:-https://x-access-token:${GH_TOKEN}@github.com/${repo}.git}"
+token="${GH_TOKEN//[[:space:]]/}"
+clone_url="${INFRA_CLONE_URL:-https://x-access-token:${token}@github.com/${repo}.git}"
 branch="sortir/bump-${version}"
 defaults="roles/sortir/defaults/main.yml"
 
 workdir=$(mktemp -d)
 trap 'rm -rf "$workdir"' EXIT
+
+if [ -z "${INFRA_CLONE_URL:-}" ]; then
+  if ! gh api "repos/${repo}" --jq .full_name >/dev/null 2>&1; then
+    echo "INFRA_TOKEN cannot access ${repo} - check the GitHub secret" >&2
+    exit 1
+  fi
+fi
 
 git clone --quiet "$clone_url" "$workdir"
 cd "$workdir"
