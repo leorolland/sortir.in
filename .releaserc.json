@@ -3,7 +3,10 @@
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
-    ["@semantic-release/exec", { "prepareCmd": "make release VERSION=${nextRelease.version}" }],
+    ["@semantic-release/exec", {
+      "prepareCmd": "make release VERSION=${nextRelease.version}",
+      "successCmd": "echo \"NEW_VERSION=${nextRelease.version}\" >> \"$GITHUB_ENV\""
+    }],
     ["@semantic-release/github", { "assets": ["release/*"] }]
   ]
 }

@@ -60,3 +60,9 @@ jobs:
         run: pnpm exec semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Open bump PR in infra
+        if: env.NEW_VERSION != ''
+        run: ./.github/scripts/bump-infra.sh "$NEW_VERSION"
+        env:
+          GH_TOKEN: ${{ secrets.INFRA_TOKEN }}

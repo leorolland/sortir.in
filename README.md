@@ -114,6 +114,8 @@ This command:
 Every push to `main` runs [semantic-release](https://semantic-release.gitbook.io), which derives the next version from the commit messages and publishes a `vX.Y.Z` GitHub release with the linux binaries attached (`sortir.linux-amd64`, `populate.linux-amd64`).
 The version is baked at build time (`make release VERSION=x.y.z`) into both the binary (`-ldflags`, exposed as `GET /api/version`) and the UI, displayed as a badge on the map.
 
+After a release, a bot opens a PR on [`leorolland/infra`](https://github.com/leorolland/infra) bumping `sortir_version` (and converging `sortir_arch`) — merge it and run the `sortir` playbook to deploy. Requires the `INFRA_TOKEN` secret (fine-grained PAT with Contents + Pull requests write on the infra repo).
+
 To simulate a release locally (dry-run, nothing is published):
 
 ```bash
