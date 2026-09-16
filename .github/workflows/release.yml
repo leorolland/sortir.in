@@ -49,6 +49,10 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: ui
 
+      - name: Build UI
+        run: pnpm run build
+        working-directory: ui
+
       - name: Test application
         run: go test ./...
 
