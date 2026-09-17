@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="md/logo.svg" width="140" alt="sortir.in logo" />
+</div>
+
 # sortir.in
 
 <div align="center">
@@ -12,7 +16,7 @@
 
 ## 🌟 Overview
 
-<img src="md/nearby_events.png">
+<img src="md/nearby_events.png" alt="sortir.in — interactive map of events around you" width="100%">
 
 Sortir is an event discovery platform that aggregates and visualizes local events on an interactive map. It solves a common problem: finding interesting activities nearby shouldn't require checking multiple specialized platforms.
 
