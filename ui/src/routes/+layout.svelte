@@ -15,7 +15,7 @@
 </script>
 
 <svelte:head>
-  <title>{$metadata.title} | {config.site?.name}</title>
+  <title>{$metadata.title}{config.site?.name ? ` | ${config.site.name}` : ''}</title>
 </svelte:head>
 
 <div class="alerts-container">

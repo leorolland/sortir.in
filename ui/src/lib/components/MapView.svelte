@@ -19,12 +19,34 @@
   import { writable } from 'svelte/store';
   import { DateRange, getMaxDateForRange } from '$lib/utils/dateUtils';
   import { eventsStore } from '$lib/stores/events';
+  import { placeDisplayPhrase, reverseGeocode, type Place } from '$lib/utils/geocode';
+  import { metadata } from '$lib/metadata.js';
 
   const pins = $derived($pinsStore);
   let map = $state<MaplibreMap | undefined>(undefined);
   let sidebarCollapsed = $state<boolean>(window.innerWidth < 768);
   let geoJsonData = $state(pinsToGeoJSON([]));
   let initialized = $state(false);
+  let place = $state<Place>({});
+  let zoom = $state<number>(0);
+
+  const eventsOnScreen = $derived(pins.reduce((sum, pin) => sum + pin.amount, 0));
+
+  let geocodeTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function updatePlace() {
+    if (!map) return;
+
+    zoom = map.getZoom();
+
+    clearTimeout(geocodeTimer);
+    geocodeTimer = setTimeout(async () => {
+      const center = map?.getCenter();
+      if (!center) return;
+
+      place = await reverseGeocode(center.lat, center.lng);
+    }, 500);
+  }
 
   // Create a store for the selected date range
   export const selectedDateRange = writable<DateRange>(DateRange.TODAY);
@@ -55,6 +77,8 @@
     eventsStore.getEventsInBounds(map.getBounds(), maxDate);
 
     geoJsonData = pinsToGeoJSON(pins);
+
+    updatePlace();
   }
 
 
@@ -113,7 +137,14 @@
       map?.off('moveend', updatePins);
       map?.off('load', loadPinImages);
       map?.off('click', handleMapClick);
+      clearTimeout(geocodeTimer);
     };
+  });
+
+  $effect(() => {
+    const location = placeDisplayPhrase(place, zoom) || 'autour de vous';
+    const title = `${eventsOnScreen} ${eventsOnScreen === 1 ? 'sortie' : 'sorties'} ${location}`;
+    metadata.update((m) => ({ ...m, title }));
   });
 
   let prevPinsLength = 0;
