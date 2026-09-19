@@ -11,6 +11,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 func RegisterApp(app *pocketbase.PocketBase) {
@@ -37,11 +38,16 @@ func bindRoutes(app *pocketbase.PocketBase) {
 
 func bindCrons(app *pocketbase.PocketBase) {
 	app.Cron().MustAdd("delete_expired_events_cron", "* * * * *", func() {
-		_, err := app.DB().Delete("events",
-			dbx.NewExp("end < {:now}", dbx.Params{"now": time.Now().Format("2006-01-02T15:04:05Z")}),
-		).Execute()
-		if err != nil {
+		if err := DeleteExpiredEvents(app); err != nil {
 			app.Logger().Error("failed to delete expired events", "error", err)
 		}
 	})
+}
+
+// DeleteExpiredEvents removes events that have already ended.
+func DeleteExpiredEvents(app core.App) error {
+	_, err := app.DB().Delete("events",
+		dbx.NewExp("end < {:now}", dbx.Params{"now": time.Now().UTC().Format(types.DefaultDateLayout)}),
+	).Execute()
+	return err
 }
