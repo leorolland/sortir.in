@@ -19,7 +19,7 @@ type Pin struct {
 }
 
 type PinsService interface {
-	GetPins(bounds Bounds, maxDate time.Time) ([]Pin, error)
+	GetPins(bounds Bounds, minDate, maxDate time.Time) ([]Pin, error)
 }
 
 type pins struct {
@@ -32,8 +32,8 @@ func NewPins(eventRepository EventRepository) PinsService {
 	}
 }
 
-func (p *pins) GetPins(bounds Bounds, maxDate time.Time) ([]Pin, error) {
-	events, err := p.eventRepository.ByBoundsAndMaxDate(bounds, maxDate)
+func (p *pins) GetPins(bounds Bounds, minDate, maxDate time.Time) ([]Pin, error) {
+	events, err := p.eventRepository.ByBoundsAndDateRange(bounds, minDate, maxDate)
 	if err != nil {
 		return nil, err
 	}

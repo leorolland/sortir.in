@@ -1,7 +1,7 @@
 <script lang="ts">
   // @ts-ignore
   import type { Feature, Geometry } from "geojson";
-  import { getMaxDateForRange, type DateRange } from "$lib/utils/dateUtils";
+  import { getDateWindow, type DateRange } from "$lib/utils/dateUtils";
   import FloatingPanel from "./FloatingPanel.svelte";
   import type { Pin } from "$lib/stores/pins";
   import { eventsStore } from "$lib/stores/events";
@@ -33,7 +33,7 @@
     const pin = feature.properties;
     loading = true;
 
-    const maxDate = getMaxDateForRange(currentDateRange);
+    const window = getDateWindow(currentDateRange);
 
     // Parse location if it's a string
     let location;
@@ -44,7 +44,7 @@
     }
 
     // Load events for this location and kind
-    eventsStore.loadEventsForLocation(location, maxDate);
+    eventsStore.loadEventsForLocation(location, window);
   }
 
   // When feature changes or dateRange changes, load events for this location

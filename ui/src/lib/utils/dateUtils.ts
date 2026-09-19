@@ -4,43 +4,51 @@ export enum DateRange {
   THIS_WEEK = 'this_week'
 }
 
+export type DateWindow = {
+  min: Date;
+  max: Date;
+};
 
-export function getMaxDateForRange(range: DateRange): Date {
+function dayAt3am(from: Date, dayOffset: number): Date {
+  const date = new Date(from);
+  date.setDate(date.getDate() + dayOffset);
+  date.setHours(3, 0, 0, 0);
+  return date;
+}
+
+/**
+ * Returns the [min, max] window during which events are displayed for the
+ * given range. An event is part of the range when its [begin, end] interval
+ * overlaps the window: `begin <= max && end >= min`. This keeps ongoing
+ * events visible and includes night activities ending up to 3am the next day.
+ */
+export function getDateWindow(range: DateRange): DateWindow {
   const now = new Date();
-  const maxDate = new Date();
-  const currentHour = now.getHours();
+  const min = new Date(now);
 
   switch (range) {
-    case DateRange.TODAY:
-      // If it's between 16h and 4h, it's "Ce soir" and we set max to 6am
-      if (currentHour >= 16 || currentHour < 4) {
-        if (currentHour >= 16) {
-          // Between 16h and midnight - set to 6am next day
-          maxDate.setDate(maxDate.getDate() + 1);
-          maxDate.setHours(6, 0, 0, 0);
-        } else {
-          // Between midnight and 4h - set to 6am same day
-          maxDate.setHours(6, 0, 0, 0);
-        }
-      } else {
-        // Regular "Aujourd'hui" - end of today
-        maxDate.setHours(23, 59, 59, 999);
-      }
-      break;
-    case DateRange.TOMORROW:
-      // End of tomorrow
-      maxDate.setDate(maxDate.getDate() + 2);
-      maxDate.setHours(6, 0, 0, 0);
-      break;
-    case DateRange.THIS_WEEK:
-      // End of the week (next Sunday)
+    case DateRange.TODAY: {
+      // From now until 3am tomorrow (night activities included)
+      return { min, max: dayAt3am(now, 1) };
+    }
+    case DateRange.TOMORROW: {
+      // Tomorrow's day and its night, from 3am to 3am
+      return { min: dayAt3am(now, 1), max: dayAt3am(now, 2) };
+    }
+    case DateRange.THIS_WEEK: {
+      // Until Monday 3am: the next Sunday's night belongs to the week
       const daysToSunday = 7 - now.getDay();
-      maxDate.setDate(maxDate.getDate() + daysToSunday);
-      maxDate.setHours(23, 59, 59, 999);
-      break;
+      return { min, max: dayAt3am(now, daysToSunday + 1) };
+    }
   }
+}
 
-  return maxDate;
+/**
+ * Formats a date the same way PocketBase stores dates
+ * ("2006-01-02 15:04:05.000Z") so that filter comparisons are exact.
+ */
+export function formatDateForFilter(date: Date): string {
+  return date.toISOString().replace('T', ' ');
 }
 
 /**

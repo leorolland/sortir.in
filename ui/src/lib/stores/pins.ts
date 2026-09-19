@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import type { DateWindow } from '$lib/utils/dateUtils';
 
 export type Pin = {
   loc: {
@@ -23,7 +24,7 @@ function createPinsStore() {
 
   return {
     subscribe,
-    loadPins: async (bounds: MapBounds, maxBeginDate: Date) => {
+    loadPins: async (bounds: MapBounds, { min, max }: DateWindow) => {
       currentBounds = bounds;
       try {
         const url = new URL('/api/pins', window.location.origin);
@@ -31,7 +32,8 @@ function createPinsStore() {
         url.searchParams.append('south', bounds.getSouth().toString());
         url.searchParams.append('east', bounds.getEast().toString());
         url.searchParams.append('west', bounds.getWest().toString());
-        url.searchParams.append('max_time', maxBeginDate.toISOString());
+        url.searchParams.append('min_time', min.toISOString());
+        url.searchParams.append('max_time', max.toISOString());
 
         const response = await fetch(url.toString());
         if (!response.ok) {

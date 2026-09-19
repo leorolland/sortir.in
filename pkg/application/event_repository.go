@@ -11,5 +11,5 @@ type Bounds struct {
 
 //go:generate go run github.com/golang/mock/mockgen -destination=mocks/mock_event_repository.go -package=applicationmocks github.com/leorolland/sortir.in/pkg/application EventRepository
 type EventRepository interface {
-	ByBoundsAndMaxDate(bounds Bounds, maxDate time.Time) ([]Pin, error)
+	ByBoundsAndDateRange(bounds Bounds, minDate, maxDate time.Time) ([]Pin, error)
 }

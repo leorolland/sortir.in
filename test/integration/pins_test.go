@@ -18,6 +18,7 @@ func TestPinsGetSuccess(t *testing.T) {
 	testCases := map[string]struct {
 		events   []application.Event
 		bounds   application.Bounds
+		minDate  time.Time
 		maxDate  time.Time
 		expected []application.Pin
 	}{
@@ -29,10 +30,11 @@ func TestPinsGetSuccess(t *testing.T) {
 				East:  5.0000,
 				West:  1.0000,
 			},
-			maxDate:  time.Now(),
+			minDate:  time.Now(),
+			maxDate:  time.Now().Add(time.Hour * 24),
 			expected: []application.Pin{},
 		},
-		"with 1 event outside bounds and 1 event inside bounds but outside max date": {
+		"with 1 event outside bounds and 1 event inside bounds but entirely before the window": {
 			events: applicationtest.MustValidateEvents(t, []application.Event{
 				{
 					Name:  "Event outside bounds",
@@ -45,8 +47,8 @@ func TestPinsGetSuccess(t *testing.T) {
 					Name:  "Event inside bounds",
 					Loc:   application.EventLocation{Lat: 42.8, Lon: 1.3},
 					Kind:  application.KindConcert,
-					Begin: time.Now().Add(time.Hour * 24 * 50),
-					End:   time.Now().Add(time.Hour * 24 * 51),
+					Begin: time.Now(),
+					End:   time.Now().Add(time.Hour * 24),
 				},
 			}),
 			bounds: application.Bounds{
@@ -55,8 +57,102 @@ func TestPinsGetSuccess(t *testing.T) {
 				East:  5.0000,
 				West:  1.0000,
 			},
-			maxDate:  time.Now().Add(time.Hour * 24 * 4),
+			minDate:  time.Now().Add(time.Hour * 48),
+			maxDate:  time.Now().Add(time.Hour * 96),
 			expected: []application.Pin{},
+		},
+		"with 1 event outside bounds and 1 event inside bounds but beginning after the window": {
+			events: applicationtest.MustValidateEvents(t, []application.Event{
+				{
+					Name:  "Event outside bounds",
+					Loc:   application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:  application.KindBusiness,
+					Begin: time.Now().Add(time.Hour * 24),
+					End:   time.Now().Add(time.Hour * 24 * 2),
+				},
+				{
+					Name:  "Event inside bounds",
+					Loc:   application.EventLocation{Lat: 42.8, Lon: 1.3},
+					Kind:  application.KindConcert,
+					Begin: time.Now().Add(time.Hour * 48),
+					End:   time.Now().Add(time.Hour * 72),
+				},
+			}),
+			bounds: application.Bounds{
+				North: 45.0000,
+				South: 41.0000,
+				East:  5.0000,
+				West:  1.0000,
+			},
+			minDate:  time.Now(),
+			maxDate:  time.Now().Add(time.Hour * 24),
+			expected: []application.Pin{},
+		},
+		"with 1 event outside bounds and 1 ongoing event inside bounds spanning the window": {
+			events: applicationtest.MustValidateEvents(t, []application.Event{
+				{
+					Name:  "Event outside bounds",
+					Loc:   application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:  application.KindBusiness,
+					Begin: time.Now().Add(time.Hour * 24),
+					End:   time.Now().Add(time.Hour * 24 * 2),
+				},
+				{
+					Name:  "Event inside bounds",
+					Loc:   application.EventLocation{Lat: 42.8, Lon: 1.3},
+					Kind:  application.KindConcert,
+					Begin: time.Now().Add(-time.Hour * 24),
+					End:   time.Now().Add(time.Hour * 48),
+				},
+			}),
+			bounds: application.Bounds{
+				North: 45.0000,
+				South: 41.0000,
+				East:  5.0000,
+				West:  1.0000,
+			},
+			minDate: time.Now(),
+			maxDate: time.Now().Add(time.Hour * 24),
+			expected: []application.Pin{
+				{
+					Loc:    application.EventLocation{Lat: 42.8, Lon: 1.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
+				},
+			},
+		},
+		"with 1 event outside bounds and 1 event inside bounds ending after the window (night activities)": {
+			events: applicationtest.MustValidateEvents(t, []application.Event{
+				{
+					Name:  "Event outside bounds",
+					Loc:   application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:  application.KindBusiness,
+					Begin: time.Now().Add(time.Hour * 24),
+					End:   time.Now().Add(time.Hour * 24 * 2),
+				},
+				{
+					Name:  "Event inside bounds",
+					Loc:   application.EventLocation{Lat: 42.8, Lon: 1.3},
+					Kind:  application.KindConcert,
+					Begin: time.Now().Add(time.Hour * 2),
+					End:   time.Now().Add(time.Hour * 20),
+				},
+			}),
+			bounds: application.Bounds{
+				North: 45.0000,
+				South: 41.0000,
+				East:  5.0000,
+				West:  1.0000,
+			},
+			minDate: time.Now(),
+			maxDate: time.Now().Add(time.Hour * 12),
+			expected: []application.Pin{
+				{
+					Loc:    application.EventLocation{Lat: 42.8, Lon: 1.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
+				},
+			},
 		},
 		"with 1 event outside bounds and 1 event inside bounds and max date": {
 			events: applicationtest.MustValidateEvents(t, []application.Event{
@@ -81,6 +177,7 @@ func TestPinsGetSuccess(t *testing.T) {
 				East:  5.0000,
 				West:  1.0000,
 			},
+			minDate: time.Now(),
 			maxDate: time.Now().Add(time.Hour * 24 * 4),
 			expected: []application.Pin{
 				{
@@ -120,6 +217,7 @@ func TestPinsGetSuccess(t *testing.T) {
 				East:  5.0000,
 				West:  1.0000,
 			},
+			minDate: time.Now(),
 			maxDate: time.Now().Add(time.Hour * 24 * 4),
 			expected: []application.Pin{
 				{
@@ -171,6 +269,7 @@ func TestPinsGetSuccess(t *testing.T) {
 				East:  5.0000,
 				West:  1.0000,
 			},
+			minDate: time.Now(),
 			maxDate: time.Now().Add(time.Hour * 24 * 4),
 			expected: []application.Pin{
 				{
@@ -222,6 +321,7 @@ func TestPinsGetSuccess(t *testing.T) {
 				East:  5.0000,
 				West:  1.0000,
 			},
+			minDate: time.Now(),
 			maxDate: time.Now().Add(time.Hour * 24 * 4),
 			expected: []application.Pin{
 				{
@@ -253,7 +353,7 @@ func TestPinsGetSuccess(t *testing.T) {
 
 			require.Equal(t, http.StatusOK, resp.StatusCode)
 
-			resp, err = getPins(t, testCase.bounds, testCase.maxDate)
+			resp, err = getPins(t, testCase.bounds, testCase.minDate, testCase.maxDate)
 			require.NoError(t, err)
 			defer resp.Body.Close()
 
@@ -268,7 +368,7 @@ func TestPinsGetSuccess(t *testing.T) {
 	}
 }
 
-func getPins(t *testing.T, bounds application.Bounds, maxDate time.Time) (*http.Response, error) {
+func getPins(t *testing.T, bounds application.Bounds, minDate, maxDate time.Time) (*http.Response, error) {
 	url := fmt.Sprintf("http://127.0.0.1:%d/api/pins", PORT)
 	req, err := http.NewRequest("GET", url, nil)
 
@@ -278,6 +378,9 @@ func getPins(t *testing.T, bounds application.Bounds, maxDate time.Time) (*http.
 	query.Add("east", strconv.FormatFloat(bounds.East, 'f', -1, 64))
 	query.Add("west", strconv.FormatFloat(bounds.West, 'f', -1, 64))
 	query.Add("max_time", maxDate.Format(time.RFC3339))
+	if !minDate.IsZero() {
+		query.Add("min_time", minDate.Format(time.RFC3339))
+	}
 
 	req.URL.RawQuery = query.Encode()
 	require.NoError(t, err)

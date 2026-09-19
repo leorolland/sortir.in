@@ -3,11 +3,11 @@ package requests
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/leorolland/sortir.in/pkg/application"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 func PutEvents(e *core.RequestEvent) error {
@@ -58,8 +58,8 @@ func PutEvents(e *core.RequestEvent) error {
 			"name":           event.Name,
 			"kind":           event.Kind,
 			"genres":         genresJSON,
-			"begin":          event.Begin.Format(time.RFC3339),
-			"end":            event.End.Format(time.RFC3339),
+			"begin":          event.Begin.UTC().Format(types.DefaultDateLayout),
+			"end":            event.End.UTC().Format(types.DefaultDateLayout),
 			"loc":            locJSON,
 			"place":          event.Place,
 			"address":        event.Address,

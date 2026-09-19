@@ -18,7 +18,7 @@ func TestGetPinsError(t *testing.T) {
 	mockEventRepo := applicationmocks.NewMockEventRepository(ctrl)
 
 	mockEventRepo.EXPECT().
-		ByBoundsAndMaxDate(gomock.Any(), gomock.Any()).
+		ByBoundsAndDateRange(gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("error"))
 
 	pinsService := application.NewPins(mockEventRepo)
@@ -28,7 +28,7 @@ func TestGetPinsError(t *testing.T) {
 		South: 48.8,
 		East:  2.4,
 		West:  2.3,
-	}, time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC))
+	}, time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC), time.Date(2025, 11, 25, 3, 0, 0, 0, time.UTC))
 
 	if err == nil {
 		t.Errorf("Expected error, got nil")
@@ -38,6 +38,7 @@ func TestGetPinsError(t *testing.T) {
 func TestGetPinsSuccess(t *testing.T) {
 	testCases := map[string]struct {
 		bounds       application.Bounds
+		minDate      time.Time
 		maxDate      time.Time
 		pinsReturned []application.Pin
 		expected     []application.Pin
@@ -49,7 +50,8 @@ func TestGetPinsSuccess(t *testing.T) {
 				East:  2.4,
 				West:  2.3,
 			},
-			maxDate:      time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			minDate:      time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			maxDate:      time.Date(2025, 11, 25, 3, 0, 0, 0, time.UTC),
 			pinsReturned: []application.Pin{},
 			expected:     []application.Pin{},
 		},
@@ -60,7 +62,8 @@ func TestGetPinsSuccess(t *testing.T) {
 				East:  2.4,
 				West:  2.3,
 			},
-			maxDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			minDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			maxDate: time.Date(2025, 11, 25, 3, 0, 0, 0, time.UTC),
 			pinsReturned: []application.Pin{
 				{
 					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
@@ -83,7 +86,8 @@ func TestGetPinsSuccess(t *testing.T) {
 				East:  2.4,
 				West:  2.3,
 			},
-			maxDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			minDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			maxDate: time.Date(2025, 11, 25, 3, 0, 0, 0, time.UTC),
 			pinsReturned: []application.Pin{
 				{
 					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
@@ -116,7 +120,8 @@ func TestGetPinsSuccess(t *testing.T) {
 				East:  2.4,
 				West:  2.3,
 			},
-			maxDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			minDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			maxDate: time.Date(2025, 11, 25, 3, 0, 0, 0, time.UTC),
 			pinsReturned: []application.Pin{
 				{
 					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
@@ -157,11 +162,11 @@ func TestGetPinsSuccess(t *testing.T) {
 			mockEventRepo := applicationmocks.NewMockEventRepository(ctrl)
 
 			mockEventRepo.EXPECT().
-				ByBoundsAndMaxDate(tc.bounds, tc.maxDate).
+				ByBoundsAndDateRange(tc.bounds, tc.minDate, tc.maxDate).
 				Return(tc.pinsReturned, nil)
 
 			pinsService := application.NewPins(mockEventRepo)
-			pins, err := pinsService.GetPins(tc.bounds, tc.maxDate)
+			pins, err := pinsService.GetPins(tc.bounds, tc.minDate, tc.maxDate)
 			if err != nil {
 				t.Fatalf("failed to get pins: %v", err)
 			}

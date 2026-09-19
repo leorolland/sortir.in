@@ -22,12 +22,17 @@ func GetPins(e *core.RequestEvent) error {
 		return e.Error(http.StatusBadRequest, fmt.Sprintf("invalid max time: %v", err), nil)
 	}
 
+	minTime, err := getMinTimeFromQueryParams(e.Request.URL.Query())
+	if err != nil {
+		return e.Error(http.StatusBadRequest, fmt.Sprintf("invalid min time: %v", err), nil)
+	}
+
 	pinsService, ok := e.App.Store().Get("pinsService").(application.PinsService)
 	if !ok {
 		return e.Error(http.StatusInternalServerError, "pins service not found", nil)
 	}
 
-	pins, err := pinsService.GetPins(bounds, maxTime)
+	pins, err := pinsService.GetPins(bounds, minTime, maxTime)
 	if err != nil {
 		return e.Error(http.StatusInternalServerError, fmt.Sprintf("failed to get pins: %v", err), nil)
 	}
@@ -72,4 +77,20 @@ func getMaxTimeFromQueryParams(queryParams url.Values) (time.Time, error) {
 	}
 
 	return maxTime, nil
+}
+
+// getMinTimeFromQueryParams returns the optional min_time query parameter,
+// or the zero time when it is not provided (no lower bound).
+func getMinTimeFromQueryParams(queryParams url.Values) (time.Time, error) {
+	minTimeStr := queryParams.Get("min_time")
+	if minTimeStr == "" {
+		return time.Time{}, nil
+	}
+
+	minTime, err := time.Parse(time.RFC3339, minTimeStr)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid min time: %w", err)
+	}
+
+	return minTime, nil
 }

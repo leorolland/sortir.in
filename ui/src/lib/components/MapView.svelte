@@ -17,7 +17,7 @@
   import type { Feature, Geometry } from 'geojson';
   import { pinSVGs } from '$lib/components/pins/svg';
   import { writable } from 'svelte/store';
-  import { DateRange, getMaxDateForRange } from '$lib/utils/dateUtils';
+  import { DateRange, getDateWindow } from '$lib/utils/dateUtils';
   import { eventsStore } from '$lib/stores/events';
   import { placeDisplayPhrase, reverseGeocode, type Place } from '$lib/utils/geocode';
   import { metadata } from '$lib/metadata.js';
@@ -72,9 +72,9 @@
   async function updatePins() {
     if (!map) return;
 
-    const maxDate = getMaxDateForRange($selectedDateRange);
-    const pins = await pinsStore.loadPins(map.getBounds(), maxDate);
-    eventsStore.getEventsInBounds(map.getBounds(), maxDate);
+    const window = getDateWindow($selectedDateRange);
+    const pins = await pinsStore.loadPins(map.getBounds(), window);
+    eventsStore.getEventsInBounds(map.getBounds(), window);
 
     geoJsonData = pinsToGeoJSON(pins);
 
@@ -176,8 +176,8 @@
   <AppVersion />
 
   <MapLibre
-    center={[-1.6794, 48.1147]}
-    zoom={12}
+    center={[2.4, 46.6]}
+    zoom={5.5}
     class="map"
     style="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
     bind:map={map}

@@ -35,17 +35,17 @@ func (m *MockEventRepository) EXPECT() *MockEventRepositoryMockRecorder {
 	return m.recorder
 }
 
-// ByBoundsAndMaxDate mocks base method.
-func (m *MockEventRepository) ByBoundsAndMaxDate(arg0 application.Bounds, arg1 time.Time) ([]application.Pin, error) {
+// ByBoundsAndDateRange mocks base method.
+func (m *MockEventRepository) ByBoundsAndDateRange(arg0 application.Bounds, arg1, arg2 time.Time) ([]application.Pin, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ByBoundsAndMaxDate", arg0, arg1)
+	ret := m.ctrl.Call(m, "ByBoundsAndDateRange", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]application.Pin)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ByBoundsAndMaxDate indicates an expected call of ByBoundsAndMaxDate.
-func (mr *MockEventRepositoryMockRecorder) ByBoundsAndMaxDate(arg0, arg1 interface{}) *gomock.Call {
+// ByBoundsAndDateRange indicates an expected call of ByBoundsAndDateRange.
+func (mr *MockEventRepositoryMockRecorder) ByBoundsAndDateRange(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ByBoundsAndMaxDate", reflect.TypeOf((*MockEventRepository)(nil).ByBoundsAndMaxDate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ByBoundsAndDateRange", reflect.TypeOf((*MockEventRepository)(nil).ByBoundsAndDateRange), arg0, arg1, arg2)
 }
