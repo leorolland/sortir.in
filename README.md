@@ -147,7 +147,7 @@ make dev-ui
 
 ### Populating data
 
-The populate tool collects events for cities (in the order defined by `NewFrenchCitiesIterator`) and upserts them into the running server.
+The populate tool collects events for cities (in the order defined by `NewEuropeCitiesIterator`) and upserts them into the running server.
 
 First, start the server (in a separate terminal):
 

@@ -26,6 +26,7 @@ func main() {
 		collector.NewAllEventsCollector(),
 		collector.NewBobineCollector(),
 		collector.NewParisEventsCollector(),
+		collector.NewInfomaniakCollector(),
 	)
 
 	eventSaver := pb.NewPBClient("http://localhost:8090")
@@ -33,7 +34,7 @@ func main() {
 
 	slog.Info("Populating events", "location_limit", limit)
 
-	iterator := application.NewFrenchCitiesIterator()
+	iterator := application.NewEuropeCitiesIterator()
 	locationsProcessed := 0
 
 	for locationsProcessed < limit {
