@@ -25,6 +25,7 @@
   const pins = $derived($pinsStore);
   let map = $state<MaplibreMap | undefined>(undefined);
   let sidebarCollapsed = $state<boolean>(window.innerWidth < 768);
+  const initialZoom = window.innerWidth < 768 ? 4.5 : 5.5;
   let geoJsonData = $state(pinsToGeoJSON([]));
   let initialized = $state(false);
   let place = $state<Place>({});
@@ -177,7 +178,7 @@
 
   <MapLibre
     center={[2.4, 46.6]}
-    zoom={5.5}
+    zoom={initialZoom}
     class="map"
     style="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
     bind:map={map}

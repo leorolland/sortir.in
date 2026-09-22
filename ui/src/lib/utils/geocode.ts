@@ -62,6 +62,7 @@ export async function reverseGeocode(lat: number, lon: number): Promise<Place> {
     url.searchParams.append('lat', lat.toString());
     url.searchParams.append('lon', lon.toString());
     url.searchParams.append('lang', 'fr');
+    url.searchParams.append('radius', '50');
 
     const response = await fetch(url.toString());
     if (!response.ok) {
