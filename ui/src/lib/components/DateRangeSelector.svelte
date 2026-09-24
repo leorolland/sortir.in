@@ -109,4 +109,20 @@
     height: 20px;
     background-color: rgba(0, 0, 0, 0.1);
   }
+
+  @media (hover: none) and (pointer: coarse) {
+    /* Stretch across the top but stop before the locate button (top-right) */
+    .date-range-selector-container {
+      left: 16px;
+      right: 56px;
+      transform: none;
+      width: auto;
+    }
+
+    .date-range-option {
+      flex: 1;
+      padding: 0 8px;
+      white-space: nowrap;
+    }
+  }
 </style>
