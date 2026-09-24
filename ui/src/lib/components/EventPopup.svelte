@@ -17,6 +17,8 @@
   let events: EventsResponse[] = [];
   let unsubscribe: () => void;
   let mapsOpen = false;
+  let linkCopied = false;
+  let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
   /**
    * Bottom sheet behavior (touch devices): drives the sheet position store.
@@ -69,6 +71,8 @@
   function loadEventsForPin(currentPin: FocusedPin, currentDateRange: DateRange) {
     loading = true;
     mapsOpen = false;
+    linkCopied = false;
+    clearTimeout(copiedTimer);
     sheetState.set('normal');
 
     const window = getDateWindow(currentDateRange);
@@ -80,6 +84,26 @@
   // When pin or dateRange changes, load events for this location
   $: if (pin && dateRange) {
     loadEventsForPin(pin, dateRange);
+  }
+
+  async function sharePage() {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: events[0]?.place || document.title, url });
+      } catch {
+        // user dismissed the share sheet
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      linkCopied = true;
+      clearTimeout(copiedTimer);
+      copiedTimer = setTimeout(() => (linkCopied = false), 2000);
+    } catch {
+      // clipboard blocked (permissions) — nothing else to offer
+    }
   }
 
   function mapsLinks(event: EventsResponse, loc: { lat: number; lon: number }) {
@@ -140,6 +164,31 @@
       <path fill="#34a853" d="M59.1 109.2c15.4-24.1 33.3-35 33.3-63 0-7.7-1.9-14.9-5.2-21.3L25.6 98c2.6 3.4 5.3 7.3 7.9 11.3 9.4 14.5 6.8 23.1 12.8 23.1s3.4-8.7 12.8-23.2"/>
     </svg>
   </a>
+  <button
+    class="map-button maps-share"
+    onclick={sharePage}
+    aria-label={linkCopied ? 'Lien copié !' : 'Partager'}
+    title={linkCopied ? 'Lien copié !' : 'Partager'}
+  >
+    <svg
+      class="share-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      {#if linkCopied}
+        <path d="M20 6 9 17l-5-5" />
+      {:else}
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+        <path d="m16 6-4-4-4 4" />
+        <path d="M12 2v13" />
+      {/if}
+    </svg>
+  </button>
 {/snippet}
 
 {#if pin}
@@ -180,27 +229,29 @@
                   {@render mapChips(links)}
                 </div>
               {:else}
-                <button
-                  class="map-button maps-toggle"
-                  class:open={mapsOpen}
-                  onclick={() => (mapsOpen = !mapsOpen)}
-                  aria-label="Voir sur une carte"
-                  aria-expanded={mapsOpen}
-                  title="Voir sur une carte"
-                >
-                  <svg
-                    class="chevron-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
+                <div class="map-links">
+                  <button
+                    class="map-button maps-toggle"
+                    class:open={mapsOpen}
+                    onclick={() => (mapsOpen = !mapsOpen)}
+                    aria-label="Voir sur une carte"
+                    aria-expanded={mapsOpen}
+                    title="Voir sur une carte"
                   >
-                    <path d="M9 18l6-6-6-6" />
-                  </svg>
-                </button>
+                    <svg
+                      class="chevron-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                </div>
               {/if}
             </div>
             {#if events.length === 1}
@@ -312,6 +363,18 @@
     padding: 0;
     cursor: pointer;
     color: #666;
+  }
+
+  .maps-share {
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #007aff;
+  }
+
+  .share-icon {
+    width: 14px;
+    height: 14px;
   }
 
   .chevron-icon {
