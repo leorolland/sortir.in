@@ -2,7 +2,7 @@
   import "../app.scss";
   import { base } from "$app/paths";
   import { page } from "$app/stores";
-  import Alerts from "$lib/components/Alerts.svelte";
+  import Alerts, { hasAlerts } from "$lib/components/Alerts.svelte";
   import { metadata } from "$lib/metadata";
   const { data, children } = $props();
   const config = $derived(data.config ?? {});
@@ -18,9 +18,13 @@
   <title>{$metadata.title}{config.site?.name ? ` | ${config.site.name}` : ''}</title>
 </svelte:head>
 
-<div class="alerts-container">
-  <Alerts />
-</div>
+<!-- Rendered only when alerts exist: a transparent fixed overlay at the top
+     edge makes iOS 26 Safari paint its chrome opaque, hiding the map. -->
+{#if hasAlerts()}
+  <div class="alerts-container">
+    <Alerts />
+  </div>
+{/if}
 <main class="fullscreen">
   {@render children()}
 </main>

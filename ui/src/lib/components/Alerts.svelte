@@ -31,8 +31,12 @@
     },
   };
 
-  export function errorAlert(message: string) {
-    const type = "error";
+  // Reactive read of the alert list for templates: lets callers hide their
+  // alert containers entirely (iOS 26 Safari samples transparent fixed
+  // elements at the top edge to tint its chrome, painting an opaque bar
+  // over the page — so an empty overlay must not exist in the render tree).
+  export function hasAlerts(): boolean {
+    return _alerts.length > 0;
   }
 
   function dismiss(alert: Alert) {
