@@ -36,7 +36,11 @@
       if (top > 140) {
         sheetState.set('expanded');
       } else if (state === 'expanded' && top < 2) {
-        sheetState.set('normal');
+        // Collapse only if the content still overflows: when the expanded
+        // sheet fits everything (few events), the browser clamps scrollTop
+        // to 0 and fires this very event — collapsing here would snap the
+        // sheet back right after expanding
+        if (scroller.scrollHeight > scroller.clientHeight) sheetState.set('normal');
       } else if (state === 'peek' && top > 24) {
         sheetState.set('normal');
       }

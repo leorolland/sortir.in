@@ -84,7 +84,8 @@
           onclick={() => kindFilter.set(null)}
           aria-label="Annuler le filtre"
         >
-          {kindLabel($kindFilter)}
+          <span class="clear-filter-label">{kindLabel($kindFilter)}</span>
+          <span class="clear-filter-count">1</span>
           <span class="clear-filter-icon">×</span>
         </button>
       {/if}
@@ -341,10 +342,58 @@
     transform: scale(0.97);
   }
 
+  /* Drawn cross: geometrically centered, independent of font metrics
+     (the × glyph sits slightly low in its line box) */
   .clear-filter-icon {
-    font-size: 18px;
-    line-height: 0;
-    font-weight: 300;
+    position: relative;
+    width: 14px;
+    height: 14px;
+    color: transparent;
+    font-size: 0;
+  }
+
+  .clear-filter-icon::before,
+  .clear-filter-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 2px;
+    border-radius: 1px;
+    background-color: #fff;
+  }
+
+  .clear-filter-icon::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .clear-filter-icon::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .clear-filter-count {
+    display: none;
+  }
+
+  /* Mobile: the × alone is explicit enough — round button with the active
+     filter count instead of its name */
+  @media (hover: none) and (pointer: coarse) {
+    .clear-filter-button {
+      width: 40px;
+      padding: 0;
+      border-radius: 50%;
+    }
+
+    .clear-filter-label {
+      display: none;
+    }
+
+    .clear-filter-count {
+      display: inline;
+      font-size: 14px;
+      font-weight: 600;
+    }
   }
 
   /* Event list */

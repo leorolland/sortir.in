@@ -578,10 +578,13 @@
     }
 
     /* Let the panel's scroller shrink when the sheet is capped by its
-       max-height, so it scrolls instead of clipping. */
+       max-height, so it scrolls instead of clipping. overscroll-behavior
+       keeps drags on the sheet from chaining into map pans (which would
+       peek the sheet mid-gesture). */
     :global(.maplibregl-popup-content .floating-panel-content) {
       height: auto !important;
       min-height: 0 !important;
+      overscroll-behavior: contain;
     }
 
     :global(.maplibregl-popup-tip) {
