@@ -1,9 +1,7 @@
 <script lang="ts">
-  // @ts-ignore
-  import type { Feature, Geometry } from "geojson";
   import { getDateWindow, type DateRange } from "$lib/utils/dateUtils";
   import FloatingPanel from "./FloatingPanel.svelte";
-  import type { Pin } from "$lib/stores/pins";
+  import type { FocusedPin } from "$lib/stores/pins";
   import { eventsStore } from "$lib/stores/events";
   import type { EventsResponse } from "$lib/pocketbase/generated-types";
   import { onMount, onDestroy } from "svelte";
@@ -11,7 +9,7 @@
   import EventDescription from "./EventDescription.svelte";
   import { sheetState } from "$lib/stores/sheet";
 
-  export let feature: Feature<Geometry, Pin> | undefined = undefined;
+  export let pin: FocusedPin | undefined = undefined;
   export let dateRange: DateRange;
 
   // Local state
@@ -67,32 +65,23 @@
     if (unsubscribe) unsubscribe();
   });
 
-  function loadEventsForFeature(feature: Feature<Geometry, Pin>, currentDateRange: DateRange) {
-    const pin = feature.properties;
+  function loadEventsForPin(currentPin: FocusedPin, currentDateRange: DateRange) {
     loading = true;
     sheetState.set('normal');
 
     const window = getDateWindow(currentDateRange);
 
-    // Parse location if it's a string
-    let location;
-    if (typeof pin.loc === 'string') {
-      location = JSON.parse(pin.loc);
-    } else {
-      location = pin.loc;
-    }
-
     // Load events for this location and kind
-    eventsStore.loadEventsForLocation(location, window);
+    eventsStore.loadEventsForLocation(currentPin.loc, window);
   }
 
-  // When feature changes or dateRange changes, load events for this location
-  $: if (feature?.properties && dateRange) {
-    loadEventsForFeature(feature, dateRange);
+  // When pin or dateRange changes, load events for this location
+  $: if (pin && dateRange) {
+    loadEventsForPin(pin, dateRange);
   }
 </script>
 
-{#if feature?.properties}
+{#if pin}
   <FloatingPanel
     compact={events.length <= 1}
     withAnimation
@@ -107,17 +96,12 @@
       {:else if events.length === 0}
         <div class="popup-header">
           <div class="popup-title">Aucun événement trouvé</div>
-          <div class="popup-kind">{feature.properties.kind}</div>
-          {#if typeof feature.properties.loc === "string"}
-            {@const locObj = JSON.parse(feature.properties.loc)}
-            <div class="popup-place">
-              Lat: {locObj.lat.toFixed(4)}, Lon: {locObj.lon.toFixed(4)}
-            </div>
-          {:else}
-            <div class="popup-place">
-              Lat: {feature.properties.loc.lat.toFixed(4)}, Lon: {feature.properties.loc.lon.toFixed(4)}
-            </div>
+          {#if pin.kind}
+            <div class="popup-kind">{pin.kind}</div>
           {/if}
+          <div class="popup-place">
+            Lat: {pin.loc.lat.toFixed(4)}, Lon: {pin.loc.lon.toFixed(4)}
+          </div>
         </div>
       {:else}
         <div class="popup-header">

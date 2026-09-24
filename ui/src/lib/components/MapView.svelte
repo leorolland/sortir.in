@@ -4,7 +4,7 @@
   import CircleLayer from 'svelte-maplibre/CircleLayer.svelte';
   import SymbolLayer from 'svelte-maplibre/SymbolLayer.svelte';
   import Popup from 'svelte-maplibre/Popup.svelte';
-  import { pinsStore, type Pin } from '$lib/stores/pins';
+  import { pinsStore, type FocusedPin } from '$lib/stores/pins';
   import 'maplibre-gl/dist/maplibre-gl.css';
   import type { Map as MaplibreMap, Popup as MaplibrePopup } from 'maplibre-gl';
   import { GeolocateControl } from 'maplibre-gl';
@@ -13,24 +13,35 @@
   import EventPopup from '$lib/components/EventPopup.svelte';
   import DateRangeSelector from '$lib/components/DateRangeSelector.svelte';
   import AppVersion from '$lib/components/AppVersion.svelte';
-  // @ts-ignore
-  import type { Feature, Geometry } from 'geojson';
   import { pinSVGs, PIN_PIXEL_RATIO } from '$lib/components/pins/svg';
-  import { writable } from 'svelte/store';
+  import { writable, get } from 'svelte/store';
+  import { untrack } from 'svelte';
   import { DateRange, getDateWindow } from '$lib/utils/dateUtils';
   import { eventsStore } from '$lib/stores/events';
   import { sheetState } from '$lib/stores/sheet';
   import { placeDisplayPhrase, reverseGeocode, type Place } from '$lib/utils/geocode';
   import { metadata } from '$lib/metadata.js';
+  import { parseViewState, routerState, writeViewState } from '$lib/utils/viewState';
+  import { afterNavigate, pushState, replaceState } from '$app/navigation';
+
+  const initialView = parseViewState(window.location.search);
 
   const pins = $derived($pinsStore);
   let map = $state<MaplibreMap | undefined>(undefined);
   let sidebarCollapsed = $state<boolean>(window.innerWidth < 768);
-  const initialZoom = window.innerWidth < 768 ? 4.5 : 5.5;
+  const initialCenter: [number, number] = initialView.center
+    ? [initialView.center.lon, initialView.center.lat]
+    : [2.4, 46.6];
+  const initialZoom = initialView.zoom ?? (window.innerWidth < 768 ? 4.5 : 5.5);
   let geoJsonData = $state(pinsToGeoJSON([]));
   let initialized = $state(false);
   let place = $state<Place>({});
   let zoom = $state<number>(0);
+
+  // Pin focused in the popup. Also drives the `pin` URL parameter, so a
+  // copied URL reopens the same view (ADR 0005).
+  let selectedPin = $state<FocusedPin | null>(initialView.pin ? { loc: initialView.pin } : null);
+  let popupOpen = $state(false);
 
   const eventsOnScreen = $derived(pins.reduce((sum, pin) => sum + pin.amount, 0));
 
@@ -112,7 +123,81 @@
   }
 
   // Create a store for the selected date range
-  export const selectedDateRange = writable<DateRange>(DateRange.TODAY);
+  export const selectedDateRange = writable<DateRange>(initialView.range ?? DateRange.TODAY);
+
+  // Mirrors the current view (position, zoom, range, focused pin) into the
+  // URL so it can be copied and reopened as-is (ADR 0005). replaceState keeps
+  // the address bar in sync without polluting history; pushState is reserved
+  // for pin focus so the Back button closes the popup.
+  // URL writes wait for the SvelteKit router: its replaceState/pushState
+  // throw before the initial navigation completes, and mount-time effects
+  // (updatePins) can run before that. afterNavigate fires once the router is
+  // initialized — and provides the first write.
+  afterNavigate(() => {
+    routerState.ready = true;
+    syncUrl('replace');
+  });
+
+  function syncUrl(mode: 'replace' | 'push') {
+    if (!map || !routerState.ready) return;
+
+    const center = map.getCenter();
+    const params = new URLSearchParams(window.location.search);
+    writeViewState(params, {
+      center: { lat: center.lat, lon: center.lng },
+      zoom: map.getZoom(),
+      range: get(selectedDateRange),
+      // untrack: a pin focus must not re-run the caller effect (and refetch pins)
+      pin: untrack(() => selectedPin)?.loc ?? null
+    });
+
+    const query = params.toString();
+    const url = `${window.location.pathname}${query ? `?${query}` : ''}`;
+    if (mode === 'push') pushState(url, {});
+    else replaceState(url, {});
+  }
+
+  function focusPin(pin: FocusedPin) {
+    selectedPin = pin;
+    syncUrl('push');
+  }
+
+  function clearPinSelection() {
+    if (!selectedPin) return;
+    selectedPin = null;
+    syncUrl('replace');
+  }
+
+  // The popup close button and outside clicks close the popup from inside
+  // svelte-maplibre: reflect that in the selection (and URL).
+  $effect(() => {
+    popupOpen = selectedPin !== null;
+  });
+
+  $effect(() => {
+    if (!popupOpen && selectedPin) clearPinSelection();
+  });
+
+  // Back/Forward restore the full view encoded in the target history entry
+  // (position, range, pin focus) without rewriting the URL.
+  $effect(() => {
+    const handlePopState = () => {
+      const view = parseViewState(window.location.search);
+
+      if (map && (view.center || view.zoom !== undefined)) {
+        map.jumpTo({
+          ...(view.center ? { center: [view.center.lon, view.center.lat] as [number, number] } : {}),
+          ...(view.zoom !== undefined ? { zoom: view.zoom } : {})
+        });
+      }
+
+      selectedDateRange.set(view.range ?? DateRange.TODAY);
+      selectedPin = view.pin ? { loc: view.pin } : null;
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  });
 
   function loadPinImages() {
     if (!map) return;
@@ -131,8 +216,24 @@
     });
   }
 
+  // The pin properties carry the authoritative location (the events filter
+  // matches it exactly); the geometry mirrors it as [lon, lat]. loc may
+  // arrive as a JSON string depending on how the feature was serialized.
+  function pinLocFromFeature(feature: any): FocusedPin['loc'] | undefined {
+    const loc = feature?.properties?.loc;
+    if (!loc) return undefined;
+    if (typeof loc !== 'string') return loc;
+    try {
+      return JSON.parse(loc);
+    } catch {
+      return undefined;
+    }
+  }
+
   async function updatePins() {
     if (!map) return;
+
+    syncUrl('replace');
 
     const window = getDateWindow($selectedDateRange);
     const pins = await pinsStore.loadPins(map.getBounds(), window);
@@ -160,6 +261,11 @@
         const feature = features[0];
         if (feature.geometry && feature.geometry.type === 'Point') {
           const coordinates = feature.geometry.coordinates.slice();
+          const focusedLoc = pinLocFromFeature(feature);
+
+          if (focusedLoc) {
+            focusPin({ loc: focusedLoc, kind: feature.properties?.kind });
+          }
 
           if (isTouchDevice()) {
             // Mobile: bring the pin to the middle of the map strip above the
@@ -174,6 +280,8 @@
           // Desktop: no forced move; the popup opens next to the pin and
           // handlePopupOpen pans only if it overflows the viewport
         }
+      } else {
+        clearPinSelection();
       }
     };
 
@@ -242,7 +350,7 @@
   <AppVersion />
 
   <MapLibre
-    center={[2.4, 46.6]}
+    center={initialCenter}
     zoom={initialZoom}
     class="map"
     style="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
@@ -323,19 +431,25 @@
           'icon-anchor': 'bottom'
         }}
       >
-        <Popup
-          openOn="click"
-          closeButton={true}
-          maxWidth="none"
-          onopen={handlePopupOpen}
-          onclose={handlePopupClose}
-        >
-          {#snippet children({ data }: { data: Feature<Geometry, Pin> | undefined })}
-            <EventPopup feature={data ?? undefined} dateRange={$selectedDateRange} />
-          {/snippet}
-        </Popup>
       </SymbolLayer>
     </GeoJSON>
+
+    <!-- Manual popup driven by selectedPin: opens on pin clicks (handled in
+         handleMapClick) and from the `pin` URL parameter, so a shared link
+         restores the exact same popup (ADR 0005). -->
+    <Popup
+      openOn="manual"
+      closeButton={true}
+      maxWidth="none"
+      bind:open={popupOpen}
+      lngLat={selectedPin ? [selectedPin.loc.lon, selectedPin.loc.lat] : undefined}
+      onopen={handlePopupOpen}
+      onclose={handlePopupClose}
+    >
+      {#snippet children()}
+        <EventPopup pin={selectedPin ?? undefined} dateRange={$selectedDateRange} />
+      {/snippet}
+    </Popup>
   </MapLibre>
 
 </div>

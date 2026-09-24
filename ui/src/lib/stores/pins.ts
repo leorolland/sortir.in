@@ -10,6 +10,16 @@ export type Pin = {
   amount: number;
 }
 
+// Pin currently focused in the popup. kind is unknown when the focus comes
+// from a shared URL, where only the location is encoded.
+export type FocusedPin = {
+  loc: {
+    lat: number;
+    lon: number;
+  };
+  kind?: string;
+}
+
 export interface MapBounds {
   getNorth(): number;
   getSouth(): number;
