@@ -258,7 +258,7 @@
           'icon-anchor': 'bottom'
         }}
       >
-        <Popup openOn="click">
+        <Popup openOn="click" closeButton={true}>
           {#snippet children({ data }: { data: Feature<Geometry, Pin> | undefined })}
             <EventPopup feature={data ?? undefined} dateRange={$selectedDateRange} />
           {/snippet}
@@ -318,5 +318,87 @@
 
   :global(.maplibregl-marker) {
     background: none !important;
+  }
+
+  /* MapLibre's built-in popup close button: only used on touch devices,
+     where the full-screen popup has no "click outside" to close. */
+  :global(.maplibregl-popup-close-button) {
+    display: none;
+  }
+
+  /* On touch devices, the pin popup stops floating over the map and becomes
+     a full-screen page: the popup element is stretched over the viewport and
+     the frosted-glass panel fills it, the blurred map staying behind. */
+  @media (hover: none) and (pointer: coarse) {
+    :global(.maplibregl-popup) {
+      position: fixed !important;
+      inset: 0 !important;
+      transform: none !important;
+      max-width: none !important;
+      z-index: 800 !important; /* above map controls, below global alerts */
+      animation: popup-fullscreen-in 250ms ease-out;
+    }
+
+    :global(.maplibregl-popup-content) {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column;
+      overflow: hidden !important;
+    }
+
+    :global(.maplibregl-popup .sv-popup) {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    :global(.maplibregl-popup-content .floating-panel) {
+      flex: 1;
+      min-height: 0;
+      border-radius: 0;
+    }
+
+    :global(.maplibregl-popup-tip) {
+      display: none !important;
+    }
+
+    :global(.maplibregl-popup-close-button) {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      top: calc(10px + env(safe-area-inset-top)) !important;
+      right: calc(10px + env(safe-area-inset-right)) !important;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+      font-size: 22px;
+      line-height: 1;
+      color: #333;
+      pointer-events: auto; /* container has pointer-events: none */
+    }
+  }
+
+  @keyframes popup-fullscreen-in {
+    from {
+      translate: 0 32px;
+      opacity: 0;
+    }
+    to {
+      translate: 0 0;
+      opacity: 1;
+    }
+  }
+
+  @media (hover: none) and (pointer: coarse) and (prefers-reduced-motion: reduce) {
+    :global(.maplibregl-popup) {
+      animation: none;
+    }
   }
 </style>

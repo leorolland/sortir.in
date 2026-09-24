@@ -220,4 +220,23 @@
     width: auto !important;
     display: block !important;
   }
+
+  /* Full-screen popup on touch devices: single-column cards, the whole
+     panel scrolls as one page (no nested scroll). */
+  @media (hover: none) and (pointer: coarse) {
+    .popup-content {
+      padding: calc(52px + env(safe-area-inset-top)) 17px calc(20px + env(safe-area-inset-bottom));
+    }
+
+    .location-title,
+    .events-container {
+      max-width: none;
+    }
+
+    .events-container {
+      max-height: none;
+      overflow: visible;
+      padding-right: 0;
+    }
+  }
 </style>
