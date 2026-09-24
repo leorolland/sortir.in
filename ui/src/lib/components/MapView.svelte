@@ -15,7 +15,7 @@
   import AppVersion from '$lib/components/AppVersion.svelte';
   // @ts-ignore
   import type { Feature, Geometry } from 'geojson';
-  import { pinSVGs } from '$lib/components/pins/svg';
+  import { pinSVGs, PIN_PIXEL_RATIO } from '$lib/components/pins/svg';
   import { writable } from 'svelte/store';
   import { DateRange, getDateWindow } from '$lib/utils/dateUtils';
   import { eventsStore } from '$lib/stores/events';
@@ -70,8 +70,7 @@
       const img = new Image();
       img.onload = () => {
         if (map && !map.hasImage(`pin-${name}`)) {
-          map.addImage(`pin-${name}`, img);
-          console.log(`Image pin-${name} chargée`);
+          map.addImage(`pin-${name}`, img, { pixelRatio: PIN_PIXEL_RATIO });
         }
       };
 

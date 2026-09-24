@@ -30,6 +30,8 @@ pkg/
 migrations/          PocketBase Go migrations (run on server start)
 ui/                  SvelteKit app (Svelte 5 runes), embedded via ui/embed.go
   src/lib/components/MapView.svelte   map + layers + stores wiring (core file)
+  src/lib/components/pins/svg/        map pin SVGs — see README.md there before
+                                      regenerating or adding pins
   src/lib/stores/    pins (map aggregates) and events (lists)
   src/lib/utils/dateUtils.ts          range windows + date formatting
 docs/adr/            architecture decision records — read before changing the

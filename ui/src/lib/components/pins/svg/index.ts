@@ -4,15 +4,16 @@ import { createTheaterPinSVG } from './TheaterPinSVG';
 import { createConcertPinSVG } from './ConcertPinSVG';
 import { createFestivalPinSVG } from './FestivalPinSVG';
 import { createPartyPinSVG } from './PartyPinSVG';
+import { PIN_PIXEL_RATIO } from './PinShape';
 
-// Couleurs pour chaque type d'événement
+// Modern flat palette (Apple system colors), all high-contrast with white glyphs
 const PIN_COLORS = {
-  default: '#333333',
-  movie: '#ff9800',
-  concert: '#e91e63',
-  festival: '#9c27b0',
-  theater: '#673ab7',
-  party: '#3f51b5'
+  default: '#3A3A3C',
+  movie: '#FF9500',
+  concert: '#FF2D55',
+  festival: '#BF5AF2',
+  theater: '#5E5CE6',
+  party: '#0A84FF'
 };
 
 // Génère tous les pins SVG avec leurs couleurs respectives
@@ -36,4 +37,4 @@ export {
 };
 
 // Exporte les couleurs pour une utilisation externe
-export { PIN_COLORS };
+export { PIN_COLORS, PIN_PIXEL_RATIO };
