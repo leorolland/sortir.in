@@ -58,7 +58,7 @@
 <style>
   .date-range-selector-container {
     position: absolute;
-    top: 16px;
+    top: calc(16px + env(safe-area-inset-top));
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;

@@ -10,8 +10,8 @@
 <style lang="scss">
   .app-version {
     position: absolute;
-    bottom: 34px;
-    right: 10px;
+    bottom: calc(34px + env(safe-area-inset-bottom));
+    right: calc(10px + env(safe-area-inset-right));
     z-index: 100;
     padding: 2px 10px;
     border-radius: 20px;

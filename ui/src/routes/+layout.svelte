@@ -33,7 +33,7 @@
     left: 0;
     right: 0;
     z-index: 900;
-    padding: 0 1rem;
+    padding: env(safe-area-inset-top) 1rem 0;
   }
 
   main.fullscreen {

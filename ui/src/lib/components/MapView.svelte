@@ -471,8 +471,8 @@
   }
 
   :global(.maplibregl-ctrl-top-right) {
-    top: 10px;
-    right: 10px;
+    top: calc(10px + env(safe-area-inset-top));
+    right: calc(10px + env(safe-area-inset-right));
   }
 
   :global(.maplibregl-popup-content) {
