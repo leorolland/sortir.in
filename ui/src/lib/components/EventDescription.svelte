@@ -142,6 +142,8 @@
     transition:
       transform 0.2s,
       box-shadow 0.2s;
+    min-width: 0;
+    overflow-wrap: break-word;
   }
 
   .event-card:hover {

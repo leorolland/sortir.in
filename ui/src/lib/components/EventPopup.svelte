@@ -87,7 +87,7 @@
     withAnimation
     className="dynamic-panel {$sheetState === 'expanded' ? 'sheet-expanded' : ''} {$sheetState === 'peek' ? 'sheet-peeked' : ''}"
   >
-    <div class="popup-content" style="--event-count: {Math.max(events.length, 1)}" use:expandSheetOnScroll>
+    <div class="popup-content" use:expandSheetOnScroll>
       {#if loading}
         <div class="loading">
           <div class="spinner"></div>
@@ -114,7 +114,7 @@
         </div>
 
         <!-- Events grid -->
-        <div class="events-container">
+        <div class="events-container" class:single={events.length === 1}>
           {#each events.sort((a, b) => new Date(a.begin).getTime() - new Date(b.begin).getTime()) as event (event.id)}
             <EventDescription {event} />
           {/each}
@@ -188,6 +188,15 @@
     max-width: 100%;
   }
 
+  .location-title, .location-address {
+    contain: inline-size;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
   .events-container {
     display: grid;
     /* Auto-fill grid with minimum 220px columns */
@@ -198,10 +207,11 @@
     max-height: min(65vh, calc(100vh - 240px));
     overflow-y: auto;
     padding-right: 12px; /* Increased padding to accommodate scrollbar */
-    /* Definite width (not a max-width): required for auto-fill to count
-       multiple columns. Hugs the event count, up to the popup's viewport
-       cap (80vw minus the popup chrome's side paddings). */
-    width: min(calc(80vw - 82px), calc(240px * var(--event-count, 1) + (var(--event-count, 1) - 1) * 20px));
+    width: min(calc(80vw - 82px), 544px);
+  }
+
+  .events-container.single {
+    width: min(calc(80vw - 82px), 240px);
   }
 
   /* Modern scrollbar styling */
@@ -296,6 +306,9 @@
 
     :global(.dynamic-panel.sheet-peeked) .location-title {
       font-size: 17px;
+      display: block;
+      -webkit-line-clamp: unset;
+      line-clamp: unset;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
