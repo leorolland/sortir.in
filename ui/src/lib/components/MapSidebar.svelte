@@ -6,9 +6,53 @@
   import { onDestroy, onMount } from 'svelte';
   import { eventsStore } from '$lib/stores/events';
 
+  type SidebarEvent = EventsResponse & { timeInfo: { status: string; display: string } };
+
+  const KIND_LABELS: Record<string, string> = {
+    concert: 'Concerts',
+    theater: 'Théâtre',
+    festival: 'Festivals',
+    party: 'Soirées',
+    karaoke: 'Karaoké',
+    business: 'Professionnel',
+    'food-drinks': 'Food & boissons',
+    sports: 'Sports',
+    exhibitions: 'Expositions',
+    'health-wellness': 'Bien-être',
+    circus: 'Cirque',
+    workshop: 'Ateliers',
+    'flea-market': 'Brocantes',
+    solidarity: 'Solidarité'
+  };
+
+  function kindLabel(kind: string): string {
+    return KIND_LABELS[kind] ?? kind.charAt(0).toUpperCase() + kind.slice(1);
+  }
+
+  const FILTER_STORAGE_KEY = 'sidebar-kind-filter';
+
+  function loadSelectedKind(): string | null {
+    try {
+      return localStorage.getItem(FILTER_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  }
+
+  function setSelectedKind(kind: string | null): void {
+    selectedKind = kind;
+    try {
+      if (kind === null) localStorage.removeItem(FILTER_STORAGE_KEY);
+      else localStorage.setItem(FILTER_STORAGE_KEY, kind);
+    } catch {
+      // storage unavailable (private mode) — selection just won't persist
+    }
+  }
+
   export let map: MaplibreMap | undefined;
   export let collapsed = true;
   let events: EventsResponse[] = [];
+  let selectedKind: string | null = loadSelectedKind();
   let unsubscribe: () => void;
 
   // Subscribe to events store
@@ -22,14 +66,31 @@
     if (unsubscribe) unsubscribe();
   });
 
-  // Group events by Kinds of events not terminated with kind not unknown or not movie
-  $: groupedEvents = events.
-  filter((event) => getRelativeTimeDisplay(event.begin, event.end).status !== 'Terminé').
-  filter((event) => event.kind !== 'unknown' && event.kind !== 'movie').
-  reduce((acc, event) => {
+  // Precompute time info once per event, then drop terminated/unknown/movie
+  // and sort by soonest begin (PocketBase dates sort lexicographically)
+  $: sidebarEvents = events
+    .map((event) => ({ ...event, timeInfo: getRelativeTimeDisplay(event.begin, event.end) }))
+    .filter((event) => event.timeInfo.status !== 'Terminé')
+    .filter((event) => event.kind !== 'unknown' && event.kind !== 'movie')
+    .sort((a, b) => a.begin.localeCompare(b.begin));
+
+  // Group events by kind
+  $: groupedEvents = sidebarEvents.reduce((acc, event) => {
     acc[event.kind] = [...(acc[event.kind] || []), event];
     return acc;
-  }, {} as Record<string, EventsResponse[]>);
+  }, {} as Record<string, SidebarEvent[]>);
+
+  $: kinds = Object.keys(groupedEvents);
+
+  // Ignore a stale selection (kind no longer present after a map move)
+  $: visibleGroups =
+    selectedKind && groupedEvents[selectedKind]
+      ? { [selectedKind]: groupedEvents[selectedKind] }
+      : groupedEvents;
+
+  function timeLabel(event: SidebarEvent): string {
+    return event.timeInfo.status === 'En cours' ? 'En cours' : event.timeInfo.display;
+  }
 
   // Function to toggle sidebar and update map padding
   function toggleSidebar() {
@@ -60,11 +121,33 @@
     <FloatingPanel withAnimation scrollable className="sidebar-floating-panel">
       <div class="sidebar-inner-content">
         <h2 class="sidebar-title">Suggestions</h2>
+        {#if kinds.length > 0}
+          <div class="kind-filters">
+            <button
+              type="button"
+              class="kind-chip"
+              class:active={selectedKind === null}
+              onclick={() => setSelectedKind(null)}
+            >
+              Tout
+            </button>
+            {#each kinds as kind}
+              <button
+                type="button"
+                class="kind-chip"
+                class:active={selectedKind === kind}
+                onclick={() => setSelectedKind(selectedKind === kind ? null : kind)}
+              >
+                {kindLabel(kind)}
+              </button>
+            {/each}
+          </div>
+        {/if}
         <div class="events-list">
-          {#if events.length > 0}
-            {#each Object.keys(groupedEvents) as kind}
-              <h3 class="kind-title">{kind.charAt(0).toUpperCase() + kind.slice(1)}</h3>
-              {#each groupedEvents[kind] as event}
+          {#if kinds.length > 0}
+            {#each Object.keys(visibleGroups) as kind}
+              <h3 class="kind-title">{kindLabel(kind)}</h3>
+              {#each visibleGroups[kind] as event}
               <button
                 class="event-item"
                 onclick={() => {
@@ -81,16 +164,23 @@
                 }}
               >
                 {#if event.img}
-                  <img src={event.img} alt={event.name} class="event-img" />
+                  <img src={event.img} alt={event.name} class="event-img" loading="lazy" />
+                {:else}
+                  <div class="event-img event-img-placeholder" aria-hidden="true"></div>
                 {/if}
-                <div class="event-name">{event.name}</div>
-                <div class="event-time">{getRelativeTimeDisplay(event.begin, event.end).status}</div>
+                <div class="event-content">
+                  <div class="event-name">{event.name}</div>
+                  {#if event.place}
+                    <div class="event-place">{event.place}</div>
+                  {/if}
+                  <div class="event-time" class:ongoing={event.timeInfo.status === 'En cours'}>{timeLabel(event)}</div>
+                </div>
               </button>
             {/each}
             {/each}
           {:else}
             <div class="no-events-message">
-              Aucun évènement dans cette zone
+              Aucune suggestion dans cette zone
             </div>
           {/if}
         </div>
@@ -129,7 +219,6 @@
   .sidebar {
     width: 380px;
     height: auto;
-    min-height: 200px;
     max-height: calc(100% - 40px);
     transition: transform 100ms ease;
     pointer-events: auto;
@@ -144,7 +233,6 @@
   :global(.sidebar-floating-panel) {
     width: 100%;
     height: 100%;
-    min-height: 200px;
     max-height: calc(100% - 40px);
   }
 
@@ -237,7 +325,7 @@
 
   /* Event list */
   .events-list {
-    margin-top: 20px;
+    margin-top: 12px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -255,7 +343,7 @@
 
   /* Event item */
   .event-item {
-    padding: 18px;
+    padding: 12px;
     border-radius: 16px;
     background-color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
@@ -263,14 +351,14 @@
     width: 100%;
     text-align: left;
     border: none;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-    margin-bottom: 2px;
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
-    min-height: 90px;
     animation: fadeIn 0.3s ease-out;
   }
 
@@ -304,19 +392,50 @@
   }
 
   .event-img {
-    display: inline-block;
-    width: 20%;
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: rgba(0, 122, 255, 0.08);
+  }
+
+  .event-img-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .event-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 
   .event-name {
-    display: inline-block;
-    width: 60%;
     font-weight: 600;
-    font-size: 17px;
-    margin-bottom: 10px;
+    font-size: 15px;
     color: #000;
     letter-spacing: -0.2px;
     line-height: 1.3;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .event-place {
+    font-size: 13px;
+    font-weight: 500;
+    color: #8E8E93;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .event-time {
@@ -328,6 +447,43 @@
     background-color: rgba(0, 122, 255, 0.1);
     color: #007AFF;
     letter-spacing: -0.1px;
+  }
+
+  .event-time.ongoing {
+    background-color: #007AFF;
+    color: #fff;
+  }
+
+  /* Kind filter chips */
+  .kind-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .kind-chip {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.6);
+    color: #000;
+    letter-spacing: -0.1px;
+    transition: all 0.2s ease;
+  }
+
+  .kind-chip:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: scale(1.03);
+  }
+
+  .kind-chip.active {
+    background-color: #007AFF;
+    color: #fff;
   }
 
   .sidebar-title {

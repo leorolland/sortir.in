@@ -94,7 +94,7 @@ function formatTimeRange(beginDate: Date, endDate: Date | null): string {
 
 /**
  * Returns a formatted time display string for events
- * For status: "En cours", "Terminé", or "status-upcoming"
+ * For status: "En cours", "Terminé", or "À venir"
  * For display: "14h30 → 16h00" or "Demain 14h30 → 16h00"
  */
 export function getRelativeTimeDisplay(beginDateString: string, endDateString?: string): {
@@ -124,7 +124,7 @@ export function getRelativeTimeDisplay(beginDateString: string, endDateString?: 
     status = "Terminé";
   }
   else {
-    status = "status-upcoming";
+    status = "À venir";
   }
 
   return {
