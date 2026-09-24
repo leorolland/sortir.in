@@ -1,5 +1,7 @@
 <script lang="ts">
   import { getRelativeTimeDisplay } from '$lib/utils/dateUtils';
+  import { kindLabel } from '$lib/utils/kinds';
+  import { kindFilter } from '$lib/stores/filters';
   import type { Map as MaplibreMap } from 'maplibre-gl';
   import FloatingPanel from './FloatingPanel.svelte';
   import type { EventsResponse } from '$lib/pocketbase/generated-types';
@@ -8,51 +10,9 @@
 
   type SidebarEvent = EventsResponse & { timeInfo: { status: string; display: string } };
 
-  const KIND_LABELS: Record<string, string> = {
-    concert: 'Concerts',
-    theater: 'Théâtre',
-    festival: 'Festivals',
-    party: 'Soirées',
-    karaoke: 'Karaoké',
-    business: 'Professionnel',
-    'food-drinks': 'Food & boissons',
-    sports: 'Sports',
-    exhibitions: 'Expositions',
-    'health-wellness': 'Bien-être',
-    circus: 'Cirque',
-    workshop: 'Ateliers',
-    'flea-market': 'Brocantes',
-    solidarity: 'Solidarité'
-  };
-
-  function kindLabel(kind: string): string {
-    return KIND_LABELS[kind] ?? kind.charAt(0).toUpperCase() + kind.slice(1);
-  }
-
-  const FILTER_STORAGE_KEY = 'sidebar-kind-filter';
-
-  function loadSelectedKind(): string | null {
-    try {
-      return localStorage.getItem(FILTER_STORAGE_KEY);
-    } catch {
-      return null;
-    }
-  }
-
-  function setSelectedKind(kind: string | null): void {
-    selectedKind = kind;
-    try {
-      if (kind === null) localStorage.removeItem(FILTER_STORAGE_KEY);
-      else localStorage.setItem(FILTER_STORAGE_KEY, kind);
-    } catch {
-      // storage unavailable (private mode) — selection just won't persist
-    }
-  }
-
   export let map: MaplibreMap | undefined;
   export let collapsed = true;
   let events: EventsResponse[] = [];
-  let selectedKind: string | null = loadSelectedKind();
   let unsubscribe: () => void;
 
   // Subscribe to events store
@@ -84,8 +44,8 @@
 
   // Ignore a stale selection (kind no longer present after a map move)
   $: visibleGroups =
-    selectedKind && groupedEvents[selectedKind]
-      ? { [selectedKind]: groupedEvents[selectedKind] }
+    $kindFilter && groupedEvents[$kindFilter]
+      ? { [$kindFilter]: groupedEvents[$kindFilter] }
       : groupedEvents;
 
   function timeLabel(event: SidebarEvent): string {
@@ -108,14 +68,27 @@
 
 <div class="sidebar-container">
   {#if collapsed}
-    <button
-      type="button"
-      class="open-sidebar-button"
-      onclick={toggleSidebar}
-      aria-label="Ouvrir le panneau latéral"
-    >
-      ≡
-    </button>
+    <div class="collapsed-controls">
+      <button
+        type="button"
+        class="open-sidebar-button"
+        onclick={toggleSidebar}
+        aria-label="Ouvrir le panneau latéral"
+      >
+        ≡
+      </button>
+      {#if $kindFilter}
+        <button
+          type="button"
+          class="clear-filter-button"
+          onclick={() => kindFilter.set(null)}
+          aria-label="Annuler le filtre"
+        >
+          {kindLabel($kindFilter)}
+          <span class="clear-filter-icon">×</span>
+        </button>
+      {/if}
+    </div>
   {/if}
   <div class="sidebar {collapsed ? 'collapsed' : ''}">
     <FloatingPanel withAnimation scrollable className="sidebar-floating-panel">
@@ -126,8 +99,8 @@
             <button
               type="button"
               class="kind-chip"
-              class:active={selectedKind === null}
-              onclick={() => setSelectedKind(null)}
+              class:active={$kindFilter === null}
+              onclick={() => kindFilter.set(null)}
             >
               Tout
             </button>
@@ -135,8 +108,8 @@
               <button
                 type="button"
                 class="kind-chip"
-                class:active={selectedKind === kind}
-                onclick={() => setSelectedKind(selectedKind === kind ? null : kind)}
+                class:active={$kindFilter === kind}
+                onclick={() => kindFilter.set($kindFilter === kind ? null : kind)}
               >
                 {kindLabel(kind)}
               </button>
@@ -321,6 +294,57 @@
 
   .open-sidebar-button:active {
     transform: scale(0.95);
+  }
+
+  /* Clear-filter pill (collapsed pane) */
+  /* Buttons shown while the pane is collapsed. Absolutely positioned so
+     their width can never shift the sidebar's resting position — the
+     collapse translateX assumes the panel starts at the container's left. */
+  .collapsed-controls {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+  }
+
+  .clear-filter-button {
+    margin-left: 10px;
+    height: 40px;
+    background: rgba(0, 122, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 0 14px;
+    color: #fff;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+  }
+
+  .clear-filter-button:hover {
+    background: rgba(0, 122, 255, 1);
+    transform: scale(1.03);
+  }
+
+  .clear-filter-button:active {
+    transform: scale(0.97);
+  }
+
+  .clear-filter-icon {
+    font-size: 18px;
+    line-height: 0;
+    font-weight: 300;
   }
 
   /* Event list */

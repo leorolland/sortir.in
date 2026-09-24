@@ -18,6 +18,7 @@
   import { untrack } from 'svelte';
   import { DateRange, getDateWindow } from '$lib/utils/dateUtils';
   import { eventsStore } from '$lib/stores/events';
+  import { kindFilter } from '$lib/stores/filters';
   import { sheetState } from '$lib/stores/sheet';
   import { placeDisplayPhrase, reverseGeocode, type Place } from '$lib/utils/geocode';
   import { metadata } from '$lib/metadata.js';
@@ -26,7 +27,9 @@
 
   const initialView = parseViewState(window.location.search);
 
-  const pins = $derived($pinsStore);
+  // Pins currently displayed: narrowed by the kind filter shared with the
+  // Suggestions pane (client-side, so toggling it needs no refetch)
+  const pins = $derived($kindFilter ? $pinsStore.filter((p) => p.kind === $kindFilter) : $pinsStore);
   let map = $state<MaplibreMap | undefined>(undefined);
   let sidebarCollapsed = $state<boolean>(window.innerWidth < 768);
   const initialCenter: [number, number] = initialView.center
@@ -236,10 +239,11 @@
     syncUrl('replace');
 
     const window = getDateWindow($selectedDateRange);
-    const pins = await pinsStore.loadPins(map.getBounds(), window);
+    await pinsStore.loadPins(map.getBounds(), window);
     eventsStore.getEventsInBounds(map.getBounds(), window);
 
-    geoJsonData = pinsToGeoJSON(pins);
+    // geoJsonData is derived from the pins store (and the kind filter) by
+    // the effect below — no direct assignment here
 
     updatePlace();
   }
@@ -325,7 +329,7 @@
   let prevPinsString = '';
 
   $effect(() => {
-    const currentPinsString = JSON.stringify(pins.map((p: any) => p.id));
+    const currentPinsString = JSON.stringify(pins);
 
     if (pins.length !== prevPinsLength || currentPinsString !== prevPinsString) {
       prevPinsLength = pins.length;
@@ -339,10 +343,7 @@
 <div class="map-container">
   <MapSidebar
     map={map}
-    pins={pins}
     collapsed={sidebarCollapsed}
-    events={eventsStore.subscribeEventsForBounds}
-    on:collapsedChange={(e) => sidebarCollapsed = e.detail}
   />
 
   <DateRangeSelector selectedDateRange={selectedDateRange} />
