@@ -60,6 +60,14 @@ pre.body {
   font: inherit;
 }
 
+/* MapLibre renders its attribution toggle as a <summary> and pads nothing:
+   keep water.css's summary/button padding+margins off the map controls
+   (markers are safe since the theme no longer styles [role="button"]) */
+.maplibregl-map .maplibregl-ctrl :is(button, summary) {
+  padding: 0;
+  margin: 0;
+}
+
 .maplibregl-popup-content {
   padding: 10px;
   max-width: 80vw !important;
