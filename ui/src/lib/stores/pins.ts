@@ -17,21 +17,40 @@ export interface MapBounds {
   getWest(): number;
 }
 
+// Eager loading: fetch pins for a larger area than displayed so that pins
+// are already on screen when a pan finishes, instead of spawning. A factor
+// of 3 spans one extra screen on each side (9x the visible area)
+const EAGER_LOAD_FACTOR = 3;
+
+function expandBounds(bounds: MapBounds, factor: number): MapBounds {
+  const centerLat = (bounds.getNorth() + bounds.getSouth()) / 2;
+  const centerLng = (bounds.getEast() + bounds.getWest()) / 2;
+  const latSpan = (bounds.getNorth() - bounds.getSouth()) * factor;
+  const lngSpan = (bounds.getEast() - bounds.getWest()) * factor;
+
+  // Clamp to valid coordinate ranges: an expanded view can overshoot the
+  // poles or the antimeridian, and the API expects bounded coordinates
+  return {
+    getNorth: () => Math.min(90, centerLat + latSpan / 2),
+    getSouth: () => Math.max(-90, centerLat - latSpan / 2),
+    getEast: () => Math.min(180, centerLng + lngSpan / 2),
+    getWest: () => Math.max(-180, centerLng - lngSpan / 2)
+  };
+}
+
 function createPinsStore() {
   const { subscribe, set } = writable<Pin[]>([]);
-
-  let currentBounds: MapBounds | null = null;
 
   return {
     subscribe,
     loadPins: async (bounds: MapBounds, { min, max }: DateWindow) => {
-      currentBounds = bounds;
+      const eagerBounds = expandBounds(bounds, EAGER_LOAD_FACTOR);
       try {
         const url = new URL('/api/pins', window.location.origin);
-        url.searchParams.append('north', bounds.getNorth().toString());
-        url.searchParams.append('south', bounds.getSouth().toString());
-        url.searchParams.append('east', bounds.getEast().toString());
-        url.searchParams.append('west', bounds.getWest().toString());
+        url.searchParams.append('north', eagerBounds.getNorth().toString());
+        url.searchParams.append('south', eagerBounds.getSouth().toString());
+        url.searchParams.append('east', eagerBounds.getEast().toString());
+        url.searchParams.append('west', eagerBounds.getWest().toString());
         url.searchParams.append('min_time', min.toISOString());
         url.searchParams.append('max_time', max.toISOString());
 
