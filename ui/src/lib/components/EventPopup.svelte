@@ -24,6 +24,8 @@
    * Bottom sheet behavior (touch devices): drives the sheet position store.
    * - scrolling inside the sheet expands it (peek -> normal -> expanded)
    * - scrolling back to the very top collapses an expanded sheet
+   * - pulling down while already at the very top collapses the sheet
+   *   (native pull-to-collapse, instead of Safari's rubber-band bounce)
    * - tapping the sheet restores it when peeked
    */
   function expandSheetOnScroll(node: HTMLElement) {
@@ -46,15 +48,41 @@
       }
     };
 
+    let touchStartY: number | null = null;
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (touchStartY === null) return;
+      const pulledDown = e.touches[0].clientY - touchStartY;
+      // At the very top and still pulling down: collapse to the peek bar
+      if (scroller.scrollTop <= 0 && pulledDown > 60 && get(sheetState) !== 'peek') {
+        sheetState.set('peek');
+        touchStartY = null;
+      }
+    };
+
+    const onTouchEnd = () => {
+      touchStartY = null;
+    };
+
     const onTap = () => {
       if (get(sheetState) === 'peek') sheetState.set('normal');
     };
 
     scroller.addEventListener('scroll', onScroll, { passive: true });
+    scroller.addEventListener('touchstart', onTouchStart, { passive: true });
+    scroller.addEventListener('touchmove', onTouchMove, { passive: true });
+    scroller.addEventListener('touchend', onTouchEnd);
     node.addEventListener('click', onTap);
     return {
       destroy: () => {
         scroller.removeEventListener('scroll', onScroll);
+        scroller.removeEventListener('touchstart', onTouchStart);
+        scroller.removeEventListener('touchmove', onTouchMove);
+        scroller.removeEventListener('touchend', onTouchEnd);
         node.removeEventListener('click', onTap);
       }
     };
