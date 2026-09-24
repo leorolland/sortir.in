@@ -90,16 +90,6 @@
   $: if (feature?.properties && dateRange) {
     loadEventsForFeature(feature, dateRange);
   }
-
-  // Set CSS variable for event count to control grid width
-  $: if (events) {
-    setTimeout(() => {
-      const container = document.querySelector('.events-container') as HTMLElement;
-      if (container) {
-        container.style.setProperty('--event-count', String(events.length));
-      }
-    }, 0);
-  }
 </script>
 
 {#if feature?.properties}
@@ -108,7 +98,7 @@
     withAnimation
     className="dynamic-panel {$sheetState === 'expanded' ? 'sheet-expanded' : ''} {$sheetState === 'peek' ? 'sheet-peeked' : ''}"
   >
-    <div class="popup-content" use:expandSheetOnScroll>
+    <div class="popup-content" style="--event-count: {Math.max(events.length, 1)}" use:expandSheetOnScroll>
       {#if loading}
         <div class="loading">
           <div class="spinner"></div>
@@ -203,7 +193,6 @@
     hyphens: auto;
     display: inline-block;
     width: 100%;
-    max-width: calc(240px * min(5, var(--event-count, 1)) + (min(5, var(--event-count, 1)) - 1) * 20px);
   }
 
   .location-address {
@@ -220,12 +209,15 @@
     /* Auto-fill grid with minimum 220px columns */
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     grid-gap: 20px;
-    max-height: 65vh;
+    /* Never let the popup outgrow the viewport: the grid takes the space
+       left by the popup chrome (paddings + header) and scrolls inside */
+    max-height: min(65vh, calc(100vh - 240px));
     overflow-y: auto;
     padding-right: 12px; /* Increased padding to accommodate scrollbar */
-    /* Make width 100% to fit inside the popup */
-    width: 100%;
-    max-width: calc(240px * min(5, var(--event-count, 1)) + (min(5, var(--event-count, 1)) - 1) * 20px);
+    /* Definite width (not a max-width): required for auto-fill to count
+       multiple columns. Hugs the event count, up to the popup's viewport
+       cap (80vw minus the popup chrome's side paddings). */
+    width: min(calc(80vw - 82px), calc(240px * var(--event-count, 1) + (var(--event-count, 1) - 1) * 20px));
   }
 
   /* Modern scrollbar styling */
@@ -282,12 +274,8 @@
       padding-right: 56px;
     }
 
-    .location-title,
     .events-container {
-      max-width: none;
-    }
-
-    .events-container {
+      width: 100%;
       max-height: none;
       overflow: visible;
       padding-right: 0;

@@ -6,7 +6,7 @@
   import Popup from 'svelte-maplibre/Popup.svelte';
   import { pinsStore, type Pin } from '$lib/stores/pins';
   import 'maplibre-gl/dist/maplibre-gl.css';
-  import type { Map as MaplibreMap } from 'maplibre-gl';
+  import type { Map as MaplibreMap, Popup as MaplibrePopup } from 'maplibre-gl';
   import { GeolocateControl } from 'maplibre-gl';
   import MapSidebar from '$lib/components/MapSidebar.svelte';
   import { pinsToGeoJSON } from '$lib/utils/geoJsonUtils';
@@ -35,6 +35,57 @@
   const eventsOnScreen = $derived(pins.reduce((sum, pin) => sum + pin.amount, 0));
 
   let geocodeTimer: ReturnType<typeof setTimeout> | undefined;
+
+  let popupResizeObserver: ResizeObserver | undefined;
+
+  // Same media query as the bottom-sheet CSS in the style block
+  function isTouchDevice(): boolean {
+    return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  }
+
+  // Desktop only: pans the map by exactly the amount needed to bring the
+  // popup fully inside the viewport. Measured from the rendered element
+  // (not derived from screen heuristics), so it works for any popup size
+  // and any viewport. panBy([dx, dy]) shifts map content by (-dx, -dy).
+  function fitPopupToViewport(el: HTMLElement) {
+    if (!map) return;
+
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    const margin = 16;
+    let dx = 0;
+    let dy = 0;
+
+    if (rect.left < margin) dx = rect.left - margin;
+    else if (rect.right > window.innerWidth - margin) {
+      dx = rect.right - (window.innerWidth - margin);
+    }
+
+    if (rect.top < margin) dy = rect.top - margin;
+    else if (rect.bottom > window.innerHeight - margin) {
+      dy = rect.bottom - (window.innerHeight - margin);
+    }
+
+    if (dx || dy) map.panBy([dx, dy], { duration: 300 });
+  }
+
+  function handlePopupOpen(popup: MaplibrePopup) {
+    if (isTouchDevice()) return; // mobile uses the bottom sheet, no fitting
+
+    const el = popup.getElement();
+    fitPopupToViewport(el);
+
+    // The popup grows when its events finish loading: re-fit on each resize
+    popupResizeObserver?.disconnect();
+    popupResizeObserver = new ResizeObserver(() => fitPopupToViewport(el));
+    popupResizeObserver.observe(el);
+  }
+
+  function handlePopupClose() {
+    popupResizeObserver?.disconnect();
+    popupResizeObserver = undefined;
+  }
 
   function updatePlace() {
     if (!map) return;
@@ -109,18 +160,19 @@
         const feature = features[0];
         if (feature.geometry && feature.geometry.type === 'Point') {
           const coordinates = feature.geometry.coordinates.slice();
-          const amount = feature.properties?.amount;
 
-          const screenFactor = 0.0011*window.outerHeight; // factor to adjust the offsetY to the screen height
-          const offsetY = (-100*screenFactor) - (Math.min(3, amount/5)*80*screenFactor);
-
-          map.flyTo({
-            center: coordinates as [number, number],
-            duration: 300,
-            freezeElevation: true,
-            offset: [0, offsetY],
-            padding: window.outerHeight,
-          });
+          if (isTouchDevice()) {
+            // Mobile: bring the pin to the middle of the map strip above the
+            // bottom sheet (which covers up to ~60% of the screen)
+            map.flyTo({
+              center: coordinates as [number, number],
+              duration: 300,
+              freezeElevation: true,
+              offset: [0, -window.innerHeight * 0.3]
+            });
+          }
+          // Desktop: no forced move; the popup opens next to the pin and
+          // handlePopupOpen pans only if it overflows the viewport
         }
       }
     };
@@ -150,6 +202,7 @@
       map?.off('load', loadPinImages);
       map?.off('movestart', handleMoveStart);
       map?.off('click', handleMapClick);
+      popupResizeObserver?.disconnect();
       clearTimeout(geocodeTimer);
     };
   });
@@ -270,7 +323,13 @@
           'icon-anchor': 'bottom'
         }}
       >
-        <Popup openOn="click" closeButton={true}>
+        <Popup
+          openOn="click"
+          closeButton={true}
+          maxWidth="none"
+          onopen={handlePopupOpen}
+          onclose={handlePopupClose}
+        >
           {#snippet children({ data }: { data: Feature<Geometry, Pin> | undefined })}
             <EventPopup feature={data ?? undefined} dateRange={$selectedDateRange} />
           {/snippet}
@@ -350,7 +409,6 @@
       bottom: 0 !important;
       left: 2.5% !important;
       transform: none !important;
-      max-width: none !important;
       z-index: 800 !important; /* above map controls, below global alerts */
       animation: popup-sheet-in 300ms cubic-bezier(0.32, 0.72, 0, 1);
       transition:
