@@ -200,7 +200,7 @@
       id="events"
       data={geoJsonData}
       cluster={{
-        radius: 100,
+        radius: 60,
         maxZoom: 13
       }}
     >
