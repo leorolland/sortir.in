@@ -7,7 +7,9 @@
   import { eventsStore } from "$lib/stores/events";
   import type { EventsResponse } from "$lib/pocketbase/generated-types";
   import { onMount, onDestroy } from "svelte";
+  import { get } from "svelte/store";
   import EventDescription from "./EventDescription.svelte";
+  import { sheetState } from "$lib/stores/sheet";
 
   export let feature: Feature<Geometry, Pin> | undefined = undefined;
   export let dateRange: DateRange;
@@ -16,6 +18,42 @@
   let loading = false;
   let events: EventsResponse[] = [];
   let unsubscribe: () => void;
+
+  /**
+   * Bottom sheet behavior (touch devices): drives the sheet position store.
+   * - scrolling inside the sheet expands it (peek -> normal -> expanded)
+   * - scrolling back to the very top collapses an expanded sheet
+   * - tapping the sheet restores it when peeked
+   */
+  function expandSheetOnScroll(node: HTMLElement) {
+    const scroller = node.closest<HTMLElement>('.floating-panel-content');
+    if (!scroller) return;
+
+    const onScroll = () => {
+      const top = scroller.scrollTop;
+      const state = get(sheetState);
+      if (top > 140) {
+        sheetState.set('expanded');
+      } else if (state === 'expanded' && top < 2) {
+        sheetState.set('normal');
+      } else if (state === 'peek' && top > 24) {
+        sheetState.set('normal');
+      }
+    };
+
+    const onTap = () => {
+      if (get(sheetState) === 'peek') sheetState.set('normal');
+    };
+
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    node.addEventListener('click', onTap);
+    return {
+      destroy: () => {
+        scroller.removeEventListener('scroll', onScroll);
+        node.removeEventListener('click', onTap);
+      }
+    };
+  }
 
   // Subscribe to events store
   onMount(() => {
@@ -32,6 +70,7 @@
   function loadEventsForFeature(feature: Feature<Geometry, Pin>, currentDateRange: DateRange) {
     const pin = feature.properties;
     loading = true;
+    sheetState.set('normal');
 
     const window = getDateWindow(currentDateRange);
 
@@ -64,8 +103,12 @@
 </script>
 
 {#if feature?.properties}
-  <FloatingPanel compact={events.length <= 1} withAnimation className="dynamic-panel">
-    <div class="popup-content">
+  <FloatingPanel
+    compact={events.length <= 1}
+    withAnimation
+    className="dynamic-panel {$sheetState === 'expanded' ? 'sheet-expanded' : ''} {$sheetState === 'peek' ? 'sheet-peeked' : ''}"
+  >
+    <div class="popup-content" use:expandSheetOnScroll>
       {#if loading}
         <div class="loading">
           <div class="spinner"></div>
@@ -221,11 +264,22 @@
     display: block !important;
   }
 
-  /* Full-screen popup on touch devices: single-column cards, the whole
-     panel scrolls as one page (no nested scroll). */
+  /* Bottom sheet on touch devices: the panel hugs its content up to a cap
+     and expands when the user scrolls inside it (positions are driven by
+     the sheetState store). The map stays visible above the sheet. */
   @media (hover: none) and (pointer: coarse) {
+    :global(.maplibregl-popup-content .dynamic-panel) {
+      max-height: 60vh;
+      max-height: 60dvh;
+      transition: max-height 300ms cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
     .popup-content {
-      padding: calc(52px + env(safe-area-inset-top)) 17px calc(20px + env(safe-area-inset-bottom));
+      padding: 20px 17px calc(20px + env(safe-area-inset-bottom));
+    }
+
+    .popup-header {
+      padding-right: 56px;
     }
 
     .location-title,
@@ -237,6 +291,48 @@
       max-height: none;
       overflow: visible;
       padding-right: 0;
+    }
+
+    /* Expanded: stretched after scrolling inside the sheet */
+    :global(.maplibregl-popup-content .dynamic-panel.sheet-expanded) {
+      max-height: 90vh;
+      max-height: 90dvh;
+    }
+
+    /* Peek position: collapsed to its title bar after a map move, so the
+       map takes most of the screen; the content is clipped, not hidden, so
+       the max-height transition stays smooth. Tapping the bar restores. */
+    :global(.maplibregl-popup-content .dynamic-panel.sheet-peeked) {
+      max-height: 76px;
+      border-radius: 22px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+    }
+
+    :global(.dynamic-panel.sheet-peeked .floating-panel-content) {
+      padding: 0 !important;
+    }
+
+    :global(.dynamic-panel.sheet-peeked) .popup-content {
+      padding: 16px 12px 16px 17px;
+    }
+
+    :global(.dynamic-panel.sheet-peeked) .popup-header {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    :global(.dynamic-panel.sheet-peeked) .location-title {
+      font-size: 17px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    :global(.dynamic-panel.sheet-peeked) .popup-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 </style>

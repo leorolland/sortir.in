@@ -326,7 +326,7 @@
     border-radius: 20px;
     display: inline-block;
     background-color: rgba(0, 122, 255, 0.1);
-    color: #007AFF; /* iOS blue */
+    color: #007AFF;
     letter-spacing: -0.1px;
   }
 
@@ -341,7 +341,7 @@
 
   .no-events-message {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    color: #8E8E93; /* iOS gray color */
+    color: #8E8E93;
     font-size: 16px;
     text-align: center;
     padding: 20px;

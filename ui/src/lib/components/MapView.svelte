@@ -19,6 +19,7 @@
   import { writable } from 'svelte/store';
   import { DateRange, getDateWindow } from '$lib/utils/dateUtils';
   import { eventsStore } from '$lib/stores/events';
+  import { sheetState } from '$lib/stores/sheet';
   import { placeDisplayPhrase, reverseGeocode, type Place } from '$lib/utils/geocode';
   import { metadata } from '$lib/metadata.js';
 
@@ -47,6 +48,16 @@
 
       place = await reverseGeocode(center.lat, center.lng);
     }, 500);
+  }
+
+  // While a pin is open, any user move of the map (pan, pinch, wheel)
+  // collapses the bottom sheet to its title bar ("peek"), keeping the pin
+  // reachable: tapping the bar restores the sheet. MapLibre sets
+  // originalEvent only on user-initiated moves, so programmatic moves
+  // (flyTo on pin click, geolocation recentering) are ignored.
+  function handleMoveStart(e: { originalEvent?: Event }) {
+    if (!e.originalEvent) return;
+    sheetState.set('peek');
   }
 
   // Create a store for the selected date range
@@ -88,6 +99,7 @@
 
     map.on('moveend', updatePins);
     map.on('load', loadPinImages);
+    map.on('movestart', handleMoveStart);
 
     const handleMapClick = (e: any) => {
       if (!map) return;
@@ -137,6 +149,7 @@
     return () => {
       map?.off('moveend', updatePins);
       map?.off('load', loadPinImages);
+      map?.off('movestart', handleMoveStart);
       map?.off('click', handleMapClick);
       clearTimeout(geocodeTimer);
     };
@@ -326,40 +339,77 @@
     display: none;
   }
 
-  /* On touch devices, the pin popup stops floating over the map and becomes
-     a full-screen page: the popup element is stretched over the viewport and
-     the frosted-glass panel fills it, the blurred map staying behind. */
+  /* On touch devices, the pin popup becomes a bottom sheet: it
+     slides up from the bottom edge with rounded top corners and the map
+     stays visible above it. Its height is driven by EventPopup (max-height
+     cap + .sheet-expanded when the user scrolls inside it). */
   @media (hover: none) and (pointer: coarse) {
     :global(.maplibregl-popup) {
       position: fixed !important;
-      inset: 0 !important;
+      top: auto !important;
+      right: 2.5% !important;
+      bottom: 0 !important;
+      left: 2.5% !important;
       transform: none !important;
       max-width: none !important;
       z-index: 800 !important; /* above map controls, below global alerts */
-      animation: popup-fullscreen-in 250ms ease-out;
+      animation: popup-sheet-in 300ms cubic-bezier(0.32, 0.72, 0, 1);
+      transition:
+        left 300ms cubic-bezier(0.32, 0.72, 0, 1),
+        right 300ms cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    /* Expanded sheet: edge to edge, no side gaps */
+    :global(.maplibregl-popup:has(.sheet-expanded)) {
+      left: 0 !important;
+      right: 0 !important;
+    }
+
+    /* Peeking sheet: narrower pill, more map visible on both sides */
+    :global(.maplibregl-popup:has(.sheet-peeked)) {
+      left: 6% !important;
+      right: 6% !important;
     }
 
     :global(.maplibregl-popup-content) {
       width: 100% !important;
-      height: 100% !important;
       max-width: none !important;
       padding: 0 !important;
       display: flex !important;
       flex-direction: column;
-      overflow: hidden !important;
     }
 
     :global(.maplibregl-popup .sv-popup) {
-      flex: 1;
-      min-height: 0;
       display: flex;
       flex-direction: column;
     }
 
     :global(.maplibregl-popup-content .floating-panel) {
-      flex: 1;
-      min-height: 0;
-      border-radius: 0;
+      position: relative;
+      border-radius: 22px 22px 0 0;
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Grabber: visual cue that the sheet can be expanded/collapsed */
+    :global(.maplibregl-popup-content .floating-panel)::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 15%;
+      min-width: 54px;
+      max-width: 108px;
+      height: 4px;
+      border-radius: 2px;
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Let the panel's scroller shrink when the sheet is capped by its
+       max-height, so it scrolls instead of clipping. */
+    :global(.maplibregl-popup-content .floating-panel-content) {
+      height: auto !important;
+      min-height: 0 !important;
     }
 
     :global(.maplibregl-popup-tip) {
@@ -370,25 +420,44 @@
       display: flex !important;
       align-items: center;
       justify-content: center;
-      top: calc(10px + env(safe-area-inset-top)) !important;
-      right: calc(10px + env(safe-area-inset-right)) !important;
+      top: 12px !important;
+      right: 12px !important;
       width: 36px;
       height: 36px;
       padding: 0;
       border-radius: 50%;
       background-color: rgba(255, 255, 255, 0.95);
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
-      font-size: 22px;
-      line-height: 1;
-      color: #333;
+      color: transparent; /* MapLibre's × glyph sits off-center: hidden, the cross is drawn below */
       pointer-events: auto; /* container has pointer-events: none */
+    }
+
+    /* Drawn cross: geometrically centered, independent of font metrics */
+    :global(.maplibregl-popup-close-button)::before,
+    :global(.maplibregl-popup-close-button)::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 2px;
+      border-radius: 1px;
+      background-color: #333;
+    }
+
+    :global(.maplibregl-popup-close-button)::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    :global(.maplibregl-popup-close-button)::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
     }
   }
 
-  @keyframes popup-fullscreen-in {
+  @keyframes popup-sheet-in {
     from {
-      translate: 0 32px;
-      opacity: 0;
+      translate: 0 100%;
+      opacity: 0.4;
     }
     to {
       translate: 0 0;
@@ -399,6 +468,7 @@
   @media (hover: none) and (pointer: coarse) and (prefers-reduced-motion: reduce) {
     :global(.maplibregl-popup) {
       animation: none;
+      transition: none;
     }
   }
 </style>
