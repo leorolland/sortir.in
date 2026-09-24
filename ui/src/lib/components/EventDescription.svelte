@@ -95,7 +95,7 @@
         rel="noopener noreferrer"
         class="event-price"
       >
-        {event.price} {getCurrencySymbol(event.price_currency)}
+        {Number.isInteger(event.price) ? event.price : event.price.toFixed(2)} {getCurrencySymbol(event.price_currency)}
       </a>
     {/if}
   </div>
@@ -166,6 +166,8 @@
 
   .event-info {
     display: flex;
+    flex-wrap: wrap;
+    row-gap: 4px;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
@@ -227,6 +229,7 @@
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
     display: inline-block;
+    white-space: nowrap;
   }
 
   .event-price:hover {
