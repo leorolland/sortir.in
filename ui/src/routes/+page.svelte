@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { base } from "$app/paths";
   import { metadata } from "$lib/metadata.js";
   import MapView from "$lib/components/MapView.svelte";
 
@@ -15,10 +14,11 @@
 </div>
 
 <style>
+  /* The height:100% chain doesn't resolve to the real screen in the iOS
+     standalone app: pin the map to the layout viewport instead */
   .fullscreen-map {
-    width: 100%;
-    height: 100%;
-    position: relative;
+    position: fixed;
+    inset: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;

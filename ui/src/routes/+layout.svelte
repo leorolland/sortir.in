@@ -3,6 +3,7 @@
   import { base } from "$app/paths";
   import { page } from "$app/stores";
   import Alerts, { hasAlerts } from "$lib/components/Alerts.svelte";
+  import InstallPrompt from "$lib/components/InstallPrompt.svelte";
   import { metadata } from "$lib/metadata";
   const { data, children } = $props();
   const config = $derived(data.config ?? {});
@@ -28,6 +29,8 @@
 <main class="fullscreen">
   {@render children()}
 </main>
+<!-- Self-gating: iOS Safari only, never in standalone -->
+<InstallPrompt />
 
 <style lang="scss">
 

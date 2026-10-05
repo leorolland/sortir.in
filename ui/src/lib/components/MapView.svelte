@@ -257,6 +257,12 @@
     map.on('load', loadPinImages);
     map.on('movestart', handleMoveStart);
 
+    // MapLibre only resizes on window resize: keep the canvas in sync with
+    // its container (standalone viewport settling, chrome collapse)
+    const mapInstance = map;
+    const containerObserver = new ResizeObserver(() => mapInstance.resize());
+    containerObserver.observe(mapInstance.getContainer());
+
     const handleMapClick = (e: any) => {
       if (!map) return;
 
@@ -315,6 +321,7 @@
       map?.off('load', loadPinImages);
       map?.off('movestart', handleMoveStart);
       map?.off('click', handleMapClick);
+      containerObserver.disconnect();
       popupResizeObserver?.disconnect();
       clearTimeout(geocodeTimer);
     };
@@ -478,6 +485,15 @@
   :global(.maplibregl-ctrl-top-right) {
     top: calc(10px + env(safe-area-inset-top));
     right: calc(10px + env(safe-area-inset-right));
+  }
+
+  @media (display-mode: standalone) {
+    /* the map fills the physical screen: keep controls above the home
+       indicator */
+    :global(.maplibregl-ctrl-bottom-left),
+    :global(.maplibregl-ctrl-bottom-right) {
+      bottom: env(safe-area-inset-bottom);
+    }
   }
 
   :global(.maplibregl-popup-content) {

@@ -1,0 +1,15 @@
+{
+  "name": "sortir.in",
+  "short_name": "sortir.in",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f0f5",
+  "theme_color": "#f0f0f5",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

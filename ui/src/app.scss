@@ -15,6 +15,20 @@ html, body {
   padding: 0;
 }
 
+/* Safari 26 tints its chrome from the body background (no theme-color
+   anymore): keep the map page light instead of water.css's dark blue */
+body:has(.fullscreen-map) {
+  background-color: rgb(240 240 245);
+}
+
+/* Standalone: invisible scroll extent — the system home-indicator bar only
+   collapses on page scroll and the map page has nothing to scroll */
+@media (display-mode: standalone) {
+  body:has(.fullscreen-map) {
+    min-height: calc(100% + 1500px);
+  }
+}
+
 body {
   font-family: Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
                Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif;
