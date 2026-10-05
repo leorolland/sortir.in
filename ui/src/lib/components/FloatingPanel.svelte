@@ -1,25 +1,45 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   /**
    * Reusable component for floating panels with blur effect and scrollable content
    * @prop {boolean} compact - Compact style (for popups)
    * @prop {boolean} withAnimation - Add an appearance animation
    * @prop {boolean} scrollable - Allow scrolling of content
    * @prop {string} className - Additional CSS classes
+   * @prop {Snippet} [chrome] - Rendered inside the panel but outside the
+   *   scroller: for controls (close button...) that must stay pinned to the
+   *   panel while its content scrolls
    */
-  export let compact = false;
-  export let withAnimation = false;
-  export let scrollable = false;
-  export let className = '';
+  let {
+    compact = false,
+    withAnimation = false,
+    scrollable = false,
+    className = '',
+    children,
+    chrome
+  }: {
+    compact?: boolean;
+    withAnimation?: boolean;
+    scrollable?: boolean;
+    className?: string;
+    children?: Snippet;
+    chrome?: Snippet;
+  } = $props();
 </script>
 
 <div class="floating-panel {compact ? 'compact' : ''} {withAnimation ? 'with-animation' : ''} {scrollable ? 'scrollable' : ''} {className}">
   <div class="floating-panel-content">
-    <slot />
+    {@render children?.()}
   </div>
+  {#if chrome}
+    {@render chrome()}
+  {/if}
 </div>
 
 <style>
   .floating-panel {
+    position: relative;
     background: rgba(240, 240, 245, 0.7);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);

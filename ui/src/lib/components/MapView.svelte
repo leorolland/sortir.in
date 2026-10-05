@@ -171,8 +171,9 @@
     syncUrl('replace');
   }
 
-  // The popup close button and outside clicks close the popup from inside
-  // svelte-maplibre: reflect that in the selection (and URL).
+  // Outside clicks close the popup inside svelte-maplibre, and on touch the
+  // sheet's own close button (EventPopup) calls back here: reflect that in
+  // the selection (and URL).
   $effect(() => {
     popupOpen = selectedPin !== null;
   });
@@ -440,7 +441,7 @@
          restores the exact same popup (ADR 0005). -->
     <Popup
       openOn="manual"
-      closeButton={true}
+      closeButton={false}
       maxWidth="none"
       bind:open={popupOpen}
       lngLat={selectedPin ? [selectedPin.loc.lon, selectedPin.loc.lat] : undefined}
@@ -448,7 +449,11 @@
       onclose={handlePopupClose}
     >
       {#snippet children()}
-        <EventPopup pin={selectedPin ?? undefined} dateRange={$selectedDateRange} />
+        <EventPopup
+          pin={selectedPin ?? undefined}
+          dateRange={$selectedDateRange}
+          onclose={() => (popupOpen = false)}
+        />
       {/snippet}
     </Popup>
   </MapLibre>
@@ -506,16 +511,10 @@
     background: none !important;
   }
 
-  /* MapLibre's built-in popup close button: only used on touch devices,
-     where the full-screen popup has no "click outside" to close. */
-  :global(.maplibregl-popup-close-button) {
-    display: none;
-  }
-
   /* On touch devices, the pin popup becomes a bottom sheet: it
      slides up from the bottom edge with rounded top corners and the map
-     stays visible above it. Its height is driven by EventPopup (max-height
-     cap + .sheet-expanded when the user scrolls inside it). */
+     stays visible above it. Geometry (translateY detents) is driven by
+     the sheetDrag action (ADR 0006). */
   @media (hover: none) and (pointer: coarse) {
     :global(.maplibregl-popup) {
       position: fixed !important;
@@ -525,10 +524,16 @@
       left: 2.5% !important;
       transform: none !important;
       z-index: 800 !important; /* above map controls, below global alerts */
-      animation: popup-sheet-in 300ms cubic-bezier(0.32, 0.72, 0, 1);
       transition:
         left 300ms cubic-bezier(0.32, 0.72, 0, 1),
         right 300ms cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    /* The entrance starts when the sheet appears (EventPopup mounts it only
+       once its events are loaded), with the detent offset already applied:
+       it slides straight to its final position */
+    :global(.maplibregl-popup:has(.dynamic-panel)) {
+      animation: popup-sheet-in 300ms cubic-bezier(0.32, 0.72, 0, 1);
     }
 
     /* Expanded sheet: edge to edge, no side gaps */
@@ -549,6 +554,11 @@
       padding: 0 !important;
       display: flex !important;
       flex-direction: column;
+      /* The sheet moves with translateY (ADR 0006) while this box keeps its
+         full untranslated height: without this, the empty region above the
+         translated sheet would swallow map pans. The panel re-enables
+         pointer events for the whole visible sheet. */
+      pointer-events: none;
     }
 
     :global(.maplibregl-popup .sv-popup) {
@@ -560,6 +570,7 @@
       position: relative;
       border-radius: 22px 22px 0 0;
       box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+      pointer-events: auto;
     }
 
     /* Grabber: visual cue that the sheet can be expanded/collapsed */
@@ -577,56 +588,17 @@
       background-color: rgba(0, 0, 0, 0.2);
     }
 
-    /* Let the panel's scroller shrink when the sheet is capped by its
-       max-height, so it scrolls instead of clipping. overscroll-behavior:
-       none disables Safari's rubber-band bounce on the sheet (the pull to
-       collapse is handled by EventPopup's touch handlers) and keeps drags
-       on the sheet from chaining into map pans. */
+    /* The scroller fills the panel (base height: 100% + overflow-y: auto),
+       so overflowing content scrolls internally once the sheet is fully
+       expanded. overscroll-behavior: none disables Safari's rubber-band
+       bounce on the sheet (pull-to-collapse is the sheetDrag action) and
+       keeps drags on the sheet from chaining into map pans. */
     :global(.maplibregl-popup-content .floating-panel-content) {
-      height: auto !important;
-      min-height: 0 !important;
       overscroll-behavior: none;
     }
 
     :global(.maplibregl-popup-tip) {
       display: none !important;
-    }
-
-    :global(.maplibregl-popup-close-button) {
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-      top: 12px !important;
-      right: 12px !important;
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
-      color: transparent; /* MapLibre's × glyph sits off-center: hidden, the cross is drawn below */
-      pointer-events: auto; /* container has pointer-events: none */
-    }
-
-    /* Drawn cross: geometrically centered, independent of font metrics */
-    :global(.maplibregl-popup-close-button)::before,
-    :global(.maplibregl-popup-close-button)::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 16px;
-      height: 2px;
-      border-radius: 1px;
-      background-color: #333;
-    }
-
-    :global(.maplibregl-popup-close-button)::before {
-      transform: translate(-50%, -50%) rotate(45deg);
-    }
-
-    :global(.maplibregl-popup-close-button)::after {
-      transform: translate(-50%, -50%) rotate(-45deg);
     }
   }
 

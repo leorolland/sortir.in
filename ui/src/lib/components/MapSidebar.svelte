@@ -4,6 +4,7 @@
   import { kindFilter } from '$lib/stores/filters';
   import type { Map as MaplibreMap } from 'maplibre-gl';
   import FloatingPanel from './FloatingPanel.svelte';
+  import CrossIcon from './CrossIcon.svelte';
   import type { EventsResponse } from '$lib/pocketbase/generated-types';
   import { onDestroy, onMount } from 'svelte';
   import { eventsStore } from '$lib/stores/events';
@@ -86,7 +87,7 @@
         >
           <span class="clear-filter-label">{kindLabel($kindFilter)}</span>
           <span class="clear-filter-count">1</span>
-          <span class="clear-filter-icon">×</span>
+          <CrossIcon size={12} />
         </button>
       {/if}
     </div>
@@ -165,7 +166,7 @@
             onclick={toggleSidebar}
             aria-label="Fermer le panneau latéral"
           >
-            <span class="close-icon">×</span>
+            <CrossIcon size={14} />
           </button>
         {/if}
       </div>
@@ -259,14 +260,6 @@
     transform: scale(0.95);
   }
 
-  .close-icon {
-    font-size: 22px;
-    line-height: 0;
-    position: relative;
-    top: 1px;
-    font-weight: 300;
-  }
-
   /* Open sidebar button */
   .open-sidebar-button {
     width: 40px;
@@ -340,36 +333,6 @@
 
   .clear-filter-button:active {
     transform: scale(0.97);
-  }
-
-  /* Drawn cross: geometrically centered, independent of font metrics
-     (the × glyph sits slightly low in its line box) */
-  .clear-filter-icon {
-    position: relative;
-    width: 14px;
-    height: 14px;
-    color: transparent;
-    font-size: 0;
-  }
-
-  .clear-filter-icon::before,
-  .clear-filter-icon::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 12px;
-    height: 2px;
-    border-radius: 1px;
-    background-color: #fff;
-  }
-
-  .clear-filter-icon::before {
-    transform: translate(-50%, -50%) rotate(45deg);
-  }
-
-  .clear-filter-icon::after {
-    transform: translate(-50%, -50%) rotate(-45deg);
   }
 
   .clear-filter-count {

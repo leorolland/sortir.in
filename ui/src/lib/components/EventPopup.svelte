@@ -5,12 +5,14 @@
   import { eventsStore } from "$lib/stores/events";
   import type { EventsResponse } from "$lib/pocketbase/generated-types";
   import { onMount, onDestroy } from "svelte";
-  import { get } from "svelte/store";
   import EventDescription from "./EventDescription.svelte";
   import { sheetState } from "$lib/stores/sheet";
+  import { sheetDrag } from "$lib/utils/bottomSheet";
+  import CrossIcon from "./CrossIcon.svelte";
 
   export let pin: FocusedPin | undefined = undefined;
   export let dateRange: DateRange;
+  export let onclose: () => void = () => {};
 
   // Local state
   let loading = false;
@@ -21,72 +23,14 @@
   let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
   /**
-   * Bottom sheet behavior (touch devices): drives the sheet position store.
-   * - scrolling inside the sheet expands it (peek -> normal -> expanded)
-   * - scrolling back to the very top collapses an expanded sheet
-   * - pulling down while already at the very top collapses the sheet
-   *   (native pull-to-collapse, instead of Safari's rubber-band bounce)
-   * - tapping the sheet restores it when peeked
+   * Bottom sheet behavior (touch devices) is owned by the sheetDrag action
+   * (ADR 0006): dragging the sheet tracks the finger and settles to the
+   * nearest detent on release; tapping the peeked bar restores it. The sheet
+   * mounts only once its events are loaded, so the entrance reveals it
+   * already positioned. This component drives the store on pin/range changes
+   * and renders the close button (chrome snippet), anchored to the panel so
+   * it rides the sheet.
    */
-  function expandSheetOnScroll(node: HTMLElement) {
-    const scroller = node.closest<HTMLElement>('.floating-panel-content');
-    if (!scroller) return;
-
-    const onScroll = () => {
-      const top = scroller.scrollTop;
-      const state = get(sheetState);
-      if (top > 140) {
-        sheetState.set('expanded');
-      } else if (state === 'expanded' && top < 2) {
-        // Collapse only if the content still overflows: when the expanded
-        // sheet fits everything (few events), the browser clamps scrollTop
-        // to 0 and fires this very event — collapsing here would snap the
-        // sheet back right after expanding
-        if (scroller.scrollHeight > scroller.clientHeight) sheetState.set('normal');
-      } else if (state === 'peek' && top > 24) {
-        sheetState.set('normal');
-      }
-    };
-
-    let touchStartY: number | null = null;
-
-    const onTouchStart = (e: TouchEvent) => {
-      touchStartY = e.touches[0].clientY;
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (touchStartY === null) return;
-      const pulledDown = e.touches[0].clientY - touchStartY;
-      // At the very top and still pulling down: collapse to the peek bar
-      if (scroller.scrollTop <= 0 && pulledDown > 60 && get(sheetState) !== 'peek') {
-        sheetState.set('peek');
-        touchStartY = null;
-      }
-    };
-
-    const onTouchEnd = () => {
-      touchStartY = null;
-    };
-
-    const onTap = () => {
-      if (get(sheetState) === 'peek') sheetState.set('normal');
-    };
-
-    scroller.addEventListener('scroll', onScroll, { passive: true });
-    scroller.addEventListener('touchstart', onTouchStart, { passive: true });
-    scroller.addEventListener('touchmove', onTouchMove, { passive: true });
-    scroller.addEventListener('touchend', onTouchEnd);
-    node.addEventListener('click', onTap);
-    return {
-      destroy: () => {
-        scroller.removeEventListener('scroll', onScroll);
-        scroller.removeEventListener('touchstart', onTouchStart);
-        scroller.removeEventListener('touchmove', onTouchMove);
-        scroller.removeEventListener('touchend', onTouchEnd);
-        node.removeEventListener('click', onTap);
-      }
-    };
-  }
 
   // Subscribe to events store
   onMount(() => {
@@ -223,19 +167,21 @@
   </button>
 {/snippet}
 
-{#if pin}
+{#if pin && !loading}
   <FloatingPanel
     compact={events.length <= 1}
     withAnimation
     className="dynamic-panel {$sheetState === 'expanded' ? 'sheet-expanded' : ''} {$sheetState === 'peek' ? 'sheet-peeked' : ''}"
   >
-    <div class="popup-content" use:expandSheetOnScroll>
-      {#if loading}
-        <div class="loading">
-          <div class="spinner"></div>
-          <div>Chargement des événements...</div>
-        </div>
-      {:else if events.length === 0}
+    {#snippet chrome()}
+      <!-- Anchored to the panel (not the MapLibre container) so it rides the
+           sheet at every detent (ADR 0006) -->
+      <button type="button" class="popup-close" onclick={onclose} aria-label="Fermer">
+        <CrossIcon size={16} />
+      </button>
+    {/snippet}
+    <div class="popup-content" use:sheetDrag>
+      {#if events.length === 0}
         <div class="popup-header">
           <div class="popup-title">Aucun événement trouvé</div>
           {#if pin.kind}
@@ -310,27 +256,10 @@
     padding: 17px;
   }
 
-  .loading {
-    text-align: center;
-    padding: 20px;
-    color: #666;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(0, 0, 0, 0.1);
-    border-radius: 50%;
-    border-top-color: #2196f3;
-    animation: spin 1s ease-in-out infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
+  /* Close button: touch-only (desktop closes via outside click); it lives
+     inside the panel, so it moves with the sheet transform */
+  .popup-close {
+    display: none;
   }
 
   .popup-header {
@@ -536,13 +465,42 @@
   }
 
   /* Bottom sheet on touch devices: the panel hugs its content up to a cap
-     and expands when the user scrolls inside it (positions are driven by
-     the sheetState store). The map stays visible above the sheet. */
+     and is moved with translateY by the sheetDrag action (ADR 0006) —
+     detents are offsets, only the transform animates (settle). The map
+     stays visible above the sheet. */
   @media (hover: none) and (pointer: coarse) {
-    :global(.maplibregl-popup-content .dynamic-panel) {
-      max-height: 60vh;
-      max-height: 60dvh;
-      transition: max-height 300ms cubic-bezier(0.32, 0.72, 0, 1);
+    .popup-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+      color: #333;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    /* The extra .floating-panel class keeps this rule above FloatingPanel's
+       own .floating-panel.with-animation in the cascade regardless of CSS
+       bundle order */
+    :global(.maplibregl-popup-content .floating-panel.dynamic-panel) {
+      max-height: 95vh;
+      max-height: 95dvh;
+      will-change: transform;
+      transition: border-radius 300ms cubic-bezier(0.32, 0.72, 0, 1);
+      /* FloatingPanel's fadeIn animates transform, and CSS animations
+         override inline styles: it would ignore the sheet's translateY for
+         300ms, then teleport it to its detent when it ends. The container's
+         popup-sheet-in owns the entrance (MapView). */
+      animation: none;
     }
 
     .popup-content {
@@ -551,6 +509,9 @@
 
     .popup-header {
       padding-right: 56px;
+      /* the header is a drag surface for the sheet (ADR 0006): vertical
+         pans here never scroll the content, they move the sheet */
+      touch-action: none;
     }
 
     /* The map links don't fit next to the title on a phone: stack them
@@ -582,17 +543,11 @@
       padding-right: 0;
     }
 
-    /* Expanded: stretched after scrolling inside the sheet */
-    :global(.maplibregl-popup-content .dynamic-panel.sheet-expanded) {
-      max-height: 90vh;
-      max-height: 90dvh;
-    }
-
-    /* Peek position: collapsed to its title bar after a map move, so the
-       map takes most of the screen; the content is clipped, not hidden, so
-       the max-height transition stays smooth. Tapping the bar restores. */
+    /* Peek position: collapsed to its title bar (sheetDrag translates the
+       panel down so only PEEK_HEIGHT stays visible), so the map takes most
+       of the screen. The content is clipped, not hidden. Tapping the bar
+       restores. */
     :global(.maplibregl-popup-content .dynamic-panel.sheet-peeked) {
-      max-height: 76px;
       border-radius: 22px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
     }
