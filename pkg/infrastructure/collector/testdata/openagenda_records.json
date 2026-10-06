@@ -1,0 +1,137 @@
+{
+  "total_count": 6,
+  "results": [
+    {
+      "uid": "16329332",
+      "title_fr": "JEUDI CHANSON",
+      "conditions_fr": "Entrée libre : 0€",
+      "keywords_fr": [
+        "Concerts",
+        "Entrée libre"
+      ],
+      "image": "https://img.openagenda.com/main/e769836d7afa4b4ba79059d75fe648e8.base.image.jpg",
+      "firstdate_begin": "2026-10-15T18:30:00+00:00",
+      "firstdate_end": "2026-10-15T21:30:00+00:00",
+      "timings": "[{\"end\": \"2026-10-15T23:30:00+02:00\", \"id\": \"ZRY0Y0\", \"begin\": \"2026-10-15T20:30:00+02:00\"}]",
+      "canonicalurl": "https://openagenda.com/place-locale/events/jeudi-chanson-6169530",
+      "location_name": "La Manufacture Chanson",
+      "location_address": "124 avenue de la république 75011 paris",
+      "location_postalcode": "75011",
+      "location_city": "Paris",
+      "location_coordinates": {
+        "lon": 2.385701,
+        "lat": 48.863008
+      },
+      "originagenda_uid": "12345678"
+    },
+    {
+      "uid": "41978515",
+      "title_fr": "JEUDI CHANSON",
+      "conditions_fr": "Entrée libre : 0€",
+      "keywords_fr": [
+        "Concerts",
+        "Entrée libre"
+      ],
+      "image": "https://img.openagenda.com/main/098ce3f206d84da8bf0ba06f0cd4584e.base.image.jpg",
+      "firstdate_begin": "2027-03-25T19:30:00+00:00",
+      "firstdate_end": "2027-03-25T22:30:00+00:00",
+      "timings": "[{\"end\": \"2027-03-25T23:30:00+01:00\", \"id\": \"VC4CGN\", \"begin\": \"2027-03-25T20:30:00+01:00\"}]",
+      "canonicalurl": "https://openagenda.com/place-locale/events/jeudi-chanson-2281824",
+      "location_name": "La Manufacture Chanson",
+      "location_address": "124 avenue de la république 75011 paris",
+      "location_postalcode": "75011",
+      "location_city": "Paris",
+      "location_coordinates": {
+        "lon": 2.385701,
+        "lat": 48.863008
+      },
+      "originagenda_uid": "12345678"
+    },
+    {
+      "uid": "96691677",
+      "title_fr": "Exposition de Matthieu Ricard, Vol commercial - Galerie Françoise Livinec",
+      "conditions_fr": null,
+      "keywords_fr": null,
+      "image": "https://img.openagenda.com/main/46fb61221ff44d0fb17f8c7af4025c8a.base.image.jpg",
+      "firstdate_begin": "2026-10-29T10:00:00+00:00",
+      "firstdate_end": "2026-10-29T18:00:00+00:00",
+      "timings": "[{\"end\": \"2026-10-29T19:00:00+01:00\", \"begin\": \"2026-10-29T11:00:00+01:00\"}, {\"end\": \"2026-10-30T19:00:00+01:00\", \"begin\": \"2026-10-30T11:00:00+01:00\"}, {\"end\": \"2026-10-31T19:00:00+01:00\", \"begin\": \"2026-10-31T11:00:00+01:00\"}, {\"end\": \"2026-11-03T19:00:00+01:00\", \"begin\": \"2026-11-03T11:00:00+01:00\"}, {\"end\": \"2026-11-04T19:00:00+01:00\", \"begin\": \"2026-11-04T11:00:00+01:00\"}, {\"end\": \"2026-11-05T19:00:00+01:00\", \"begin\": \"2026-11-05T11:00:00+01:00\"}, {\"end\": \"2026-11-06T19:00:00+01:00\", \"begin\": \"2026-11-06T11:00:00+01:00\"}, {\"end\": \"2026-11-07T19:00:00+01:00\", \"begin\": \"2026-11-07T11:00:00+01:00\"}, {\"end\": \"2026-11-10T19:00:00+01:00\", \"begin\": \"2026-11-10T11:00:00+01:00\"}, {\"end\": \"2026-11-11T19:00:00+01:00\", \"begin\": \"2026-11-11T11:00:00+01:00\"}, {\"end\": \"2026-11-12T19:00:00+01:00\", \"begin\": \"2026-11-12T11:00:00+01:00\"}, {\"end\": \"2026-11-13T19:00:00+01:00\", \"begin\": \"2026-11-13T11:00:00+01:00\"}, {\"end\": \"2026-11-14T19:00:00+01:00\", \"begin\": \"2026-11-14T11:00:00+01:00\"}, {\"end\": \"2026-11-17T19:00:00+01:00\", \"begin\": \"2026-11-17T11:00:00+01:00\"}, {\"end\": \"2026-11-18T19:00:00+01:00\", \"begin\": \"2026-11-18T11:00:00+01:00\"}, {\"end\": \"2026-11-19T19:00:00+01:00\", \"begin\": \"2026-11-19T11:00:00+01:00\"}, {\"end\": \"2026-11-20T19:00:00+01:00\", \"begin\": \"2026-11-20T11:00:00+01:00\"}, {\"end\": \"2026-11-21T19:00:00+01:00\", \"begin\": \"2026-11-21T11:00:00+01:00\"}, {\"end\": \"2026-11-24T19:00:00+01:00\", \"begin\": \"2026-11-24T11:00:00+01:00\"}, {\"end\": \"2026-11-25T19:00:00+01:00\", \"begin\": \"2026-11-25T11:00:00+01:00\"}, {\"end\": \"2026-11-26T19:00:00+01:00\", \"begin\": \"2026-11-26T11:00:00+01:00\"}, {\"end\": \"2026-11-27T19:00:00+01:00\", \"begin\": \"2026-11-27T11:00:00+01:00\"}, {\"end\": \"2026-11-28T19:00:00+01:00\", \"begin\": \"2026-11-28T11:00:00+01:00\"}]",
+      "canonicalurl": "https://openagenda.com/bicentenaire-photographie-fr/events/exposition-de-matthieu-ricard-vol-commercial-galerie-francoise-livinec",
+      "location_name": "Galerie Françoise Livinec",
+      "location_address": "24 rue de Penthièvre, 75008 Paris",
+      "location_postalcode": "75008",
+      "location_city": "Paris",
+      "location_coordinates": {
+        "lon": 2.315075,
+        "lat": 48.872728
+      },
+      "originagenda_uid": "12345678"
+    },
+    {
+      "uid": "7257555",
+      "title_fr": "Les Voisins - cabaret du Père-Lachaise",
+      "conditions_fr": "A partir de 16 euros par personne",
+      "keywords_fr": null,
+      "image": "https://img.openagenda.com/main/12b58e9467e149098969d8d03e8e1759.base.image.jpg",
+      "firstdate_begin": "2026-11-07T20:00:00+00:00",
+      "firstdate_end": "2026-11-07T22:00:00+00:00",
+      "timings": "[{\"end\": \"2026-11-07T23:00:00+01:00\", \"id\": \"HT9EBN\", \"begin\": \"2026-11-07T21:00:00+01:00\"}]",
+      "canonicalurl": "https://openagenda.com/culture/events/les-voisins-cabaret-du-pere-lachaise-852694",
+      "location_name": "Le Truc du Père Lachaise",
+      "location_address": "17 Rue Fernand Léger, 75020 Paris, France",
+      "location_postalcode": "75020",
+      "location_city": "Paris",
+      "location_coordinates": {
+        "lon": 2.390126,
+        "lat": 48.86414
+      },
+      "originagenda_uid": "12345678"
+    },
+    {
+      "uid": "72584134",
+      "title_fr": "PARADOXE",
+      "conditions_fr": null,
+      "keywords_fr": [
+        "théâtre"
+      ],
+      "image": "https://img.openagenda.com/main/b1746408d2194b52863d662ce3720e27.base.image.jpg",
+      "firstdate_begin": "2026-11-05T19:00:00+00:00",
+      "firstdate_end": "2026-11-05T20:30:00+00:00",
+      "timings": "[{\"end\": \"2026-11-05T21:30:00+01:00\", \"id\": \"8KR7B7\", \"begin\": \"2026-11-05T20:00:00+01:00\"}, {\"end\": \"2026-11-06T21:30:00+01:00\", \"id\": \"7MWGDW\", \"begin\": \"2026-11-06T20:00:00+01:00\"}]",
+      "canonicalurl": "https://openagenda.com/culture/events/paradoxe-8231159",
+      "location_name": "Théâtre 71, scène nationale de Malakoff",
+      "location_address": "3 Place du 11 Novembre, 92240 Malakoff",
+      "location_postalcode": "92240",
+      "location_city": "Malakoff",
+      "location_coordinates": {
+        "lon": 2.301589,
+        "lat": 48.820847
+      },
+      "originagenda_uid": "12345678"
+    },
+    {
+      "uid": "70903590",
+      "title_fr": "SALON REUSSIR SANS ATTENDRE",
+      "conditions_fr": null,
+      "keywords_fr": [
+        "La semaine Réussir Sans Attendre",
+        "Recrutement",
+        "Insertion"
+      ],
+      "image": "https://img.openagenda.com/main/32393c7c658c490a97b58106f30ccaf4.base.image.jpg",
+      "firstdate_begin": "2026-10-15T11:30:00+00:00",
+      "firstdate_end": "2026-10-15T15:30:00+00:00",
+      "timings": "[{\"end\": \"2026-10-15T17:30:00+02:00\", \"id\": \"QM3YYW\", \"begin\": \"2026-10-15T13:30:00+02:00\"}]",
+      "canonicalurl": "https://openagenda.com/francetravail/events/salon-reussir-sans-attendre-1235595",
+      "location_name": "Agence Levallois-Perret",
+      "location_address": "92300 Levallois-Perret",
+      "location_postalcode": "92300",
+      "location_city": "Levallois-Perret",
+      "location_coordinates": {
+        "lon": 2.28287,
+        "lat": 48.897381
+      },
+      "originagenda_uid": "12345678"
+    }
+  ]
+}
