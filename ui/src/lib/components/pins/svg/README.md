@@ -10,6 +10,7 @@ differ only by a white glyph and a fill color. Rendered on the map by
 |---|---|
 | `PinShape.ts` | Shared balloon path, `PIN_VIEWBOX`, `PIN_PIXEL_RATIO`, `createPinSVG(color, glyph)` |
 | `DefaultPinSVG.ts` … `PartyPinSVG.ts` | One file per kind; each returns `createPinSVG(color, glyphMarkup)` |
+| `LabelBackground.ts` | White nine-patch pill stretched around the pin's place label (ADR 0008) |
 | `index.ts` | `PIN_COLORS` palette, `pinSVGs` registry, re-exports `PIN_PIXEL_RATIO` |
 | `MapView.svelte` | Loads blobs as `Image`s → `map.addImage('pin-' + name, img, { pixelRatio: 2 })`; maps `kind` → image in the `icon-image` `match` expression |
 

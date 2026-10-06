@@ -4,7 +4,7 @@
   import CircleLayer from 'svelte-maplibre/CircleLayer.svelte';
   import SymbolLayer from 'svelte-maplibre/SymbolLayer.svelte';
   import Popup from 'svelte-maplibre/Popup.svelte';
-  import { pinsStore, type FocusedPin } from '$lib/stores/pins';
+  import { pinsStore, type FocusedPin, type Pin } from '$lib/stores/pins';
   import 'maplibre-gl/dist/maplibre-gl.css';
   import type { Map as MaplibreMap, Popup as MaplibrePopup } from 'maplibre-gl';
   import { GeolocateControl } from 'maplibre-gl';
@@ -15,6 +15,13 @@
   import DateRangeSelector from '$lib/components/DateRangeSelector.svelte';
   import AppVersion from '$lib/components/AppVersion.svelte';
   import { pinSVGs, PIN_PIXEL_RATIO } from '$lib/components/pins/svg';
+  import {
+    LABEL_BACKGROUND_CONTENT,
+    LABEL_BACKGROUND_IMAGE,
+    LABEL_BACKGROUND_STRETCH,
+    LABEL_BACKGROUND_STRETCH_Y,
+    createLabelBackgroundSVG
+  } from '$lib/components/pins/svg/LabelBackground';
   import { writable, get } from 'svelte/store';
   import { untrack } from 'svelte';
   import { DateRange, getDateWindow } from '$lib/utils/dateUtils';
@@ -244,6 +251,30 @@
       const url = URL.createObjectURL(blob);
       img.src = url;
     });
+
+    loadLabelBackgroundImage();
+  }
+
+  // Nine-patch white pill stretched around each pin's label text
+  // (icon-text-fit in the event_labels layer).
+  function loadLabelBackgroundImage() {
+    if (!map) return;
+
+    const img = new Image();
+    img.onload = () => {
+      if (map && !map.hasImage(LABEL_BACKGROUND_IMAGE)) {
+        map.addImage(LABEL_BACKGROUND_IMAGE, img, {
+          pixelRatio: PIN_PIXEL_RATIO,
+          stretchX: LABEL_BACKGROUND_STRETCH,
+          stretchY: LABEL_BACKGROUND_STRETCH_Y,
+          content: LABEL_BACKGROUND_CONTENT
+        });
+      }
+    };
+
+    const blob = new Blob([createLabelBackgroundSVG()], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    img.src = url;
   }
 
   // The pin properties carry the authoritative location (the events filter
@@ -260,6 +291,18 @@
     }
   }
 
+  // The label pill must render UNDER its balloon. Template order adds it on
+  // top, so flip the z-order explicitly once both layers exist. moveLayer is
+  // idempotent; guarded by the current style order.
+  function orderLabelLayerUnderPins() {
+    if (!map || !map.getLayer('event_labels') || !map.getLayer('event_points')) return;
+
+    const ids = (map.getStyle().layers ?? []).map((l) => l.id);
+    if (ids.indexOf('event_labels') > ids.indexOf('event_points')) {
+      map.moveLayer('event_labels', 'event_points');
+    }
+  }
+
   async function updatePins() {
     if (!map) return;
 
@@ -273,6 +316,7 @@
     // the effect below — no direct assignment here
 
     updatePlace();
+    orderLabelLayerUnderPins();
   }
 
 
@@ -281,6 +325,7 @@
 
     map.on('moveend', updatePins);
     map.on('load', loadPinImages);
+    map.on('load', orderLabelLayerUnderPins);
     map.on('movestart', handleMoveStart);
 
     // MapLibre only resizes on window resize: keep the canvas in sync with
@@ -292,7 +337,7 @@
     const handleMapClick = (e: any) => {
       if (!map) return;
 
-      const features = map.queryRenderedFeatures(e.point, { layers: ['event_points'] });
+      const features = map.queryRenderedFeatures(e.point, { layers: ['event_points', 'event_labels'] });
 
       if (features.length > 0) {
         const feature = features[0];
@@ -331,6 +376,7 @@
     return () => {
       map?.off('moveend', updatePins);
       map?.off('load', loadPinImages);
+      map?.off('load', orderLabelLayerUnderPins);
       map?.off('movestart', handleMoveStart);
       map?.off('click', handleMapClick);
       containerObserver.disconnect();
@@ -347,15 +393,47 @@
 
   let prevPinsLength = 0;
   let prevPinsString = '';
+  let prevZoom = -1;
+
+  // Two pills closer than this (screen px) would overlap: the later pin
+  // keeps its balloon but loses its label. First come, first served.
+  const LABEL_SPACING_PX = 75;
+
+  function declutterLabels(pins: Pin[]): Pin[] {
+    const m = map;
+    if (!m) return pins;
+
+    const kept: { x: number; y: number }[] = [];
+    return pins.map((pin) => {
+      if (!pin.label) return pin;
+
+      const p = m.project([pin.loc.lon, pin.loc.lat]);
+      if (kept.some((k) => Math.hypot(k.x - p.x, k.y - p.y) < LABEL_SPACING_PX)) {
+        // Delete the key: a `label: undefined` property would still satisfy
+        // the layer's ['has', 'label'] filter and render an empty pill.
+        const withoutLabel = { ...pin };
+        delete withoutLabel.label;
+        return withoutLabel;
+      }
+
+      kept.push({ x: p.x, y: p.y });
+      return pin;
+    });
+  }
 
   $effect(() => {
     const currentPinsString = JSON.stringify(pins);
 
-    if (pins.length !== prevPinsLength || currentPinsString !== prevPinsString) {
+    if (
+      pins.length !== prevPinsLength ||
+      currentPinsString !== prevPinsString ||
+      zoom !== prevZoom
+    ) {
       prevPinsLength = pins.length;
       prevPinsString = currentPinsString;
+      prevZoom = zoom;
 
-      geoJsonData = pinsToGeoJSON(pins);
+      geoJsonData = pinsToGeoJSON(declutterLabels(pins));
     }
   });
 </script>
@@ -451,6 +529,35 @@
           'icon-size': 1.0,
           'icon-allow-overlap': true,
           'icon-anchor': 'bottom'
+        }}
+      >
+      </SymbolLayer>
+
+      <!-- Short place title on the pin: a white pill (nine-patch image)
+           stretched around the text via icon-text-fit, sitting just under
+           the balloon tip (icon-anchor bottom puts the tip on the anchor;
+           text-anchor top hangs the pill below it), so each pin evokes its
+           venue. Pins without a known place carry no label property and are
+           filtered out. -->
+      <SymbolLayer
+        id="event_labels"
+        interactive={false}
+        applyToClusters={false}
+        filter={['has', 'label']}
+        layout={{
+          'icon-image': LABEL_BACKGROUND_IMAGE,
+          'icon-text-fit': 'both',
+          'icon-text-fit-padding': [1, 3, 1, 3],
+          'text-field': ['get', 'label'],
+          'text-font': ['Open Sans Bold'],
+          'text-size': 10,
+          'text-anchor': 'top',
+          'text-offset': [0, 0.15],
+          'text-allow-overlap': true,
+          'icon-allow-overlap': true
+        }}
+        paint={{
+          'text-color': '#000000'
         }}
       >
       </SymbolLayer>

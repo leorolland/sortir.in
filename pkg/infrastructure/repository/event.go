@@ -33,11 +33,14 @@ func (r eventRepository) ByBoundsAndDateRange(bounds application.Bounds, minDate
 		conditions = append(conditions, dbx.NewExp("`end` >= {:minDate}", dbx.Params{"minDate": minDateParam}))
 	}
 
-	query := r.db.Get().Select("kind", "loc").From("events").Where(dbx.And(conditions...)).Limit(5000)
+	// The place feeds the pin label in the application layer; it never
+	// reaches the API payload itself.
+	query := r.db.Get().Select("kind", "loc", "place").From("events").Where(dbx.And(conditions...)).Limit(5000)
 
 	var rows []struct {
-		Kind string                 `db:"kind"`
-		Loc  types.JSONMap[float64] `db:"loc"`
+		Kind  string                 `db:"kind"`
+		Loc   types.JSONMap[float64] `db:"loc"`
+		Place string                 `db:"place"`
 	}
 
 	err := query.All(&rows)
@@ -51,6 +54,7 @@ func (r eventRepository) ByBoundsAndDateRange(bounds application.Bounds, minDate
 			Kind:   application.Kind(row.Kind),
 			Loc:    application.EventLocation{Lat: row.Loc.Get("lat"), Lon: row.Loc.Get("lon")},
 			Amount: 1,
+			Place:  row.Place,
 		}
 	}
 

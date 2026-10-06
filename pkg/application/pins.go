@@ -16,6 +16,13 @@ type Pin struct {
 	Loc    EventLocation `json:"loc"`
 	Kind   Kind          `json:"kind"`
 	Amount int           `json:"amount"`
+	// Label is the short place title displayed on the pin ("Saint André").
+	// Empty when the events have no known place: the pin renders without label.
+	Label string `json:"label,omitempty"`
+	// Place is the raw venue name the label is derived from. It is only
+	// meaningful on the per-event rows returned by the repository; it never
+	// reaches the API payload.
+	Place string `json:"-"`
 }
 
 type PinsService interface {
@@ -38,28 +45,42 @@ func (p *pins) GetPins(bounds Bounds, minDate, maxDate time.Time) ([]Pin, error)
 		return nil, err
 	}
 
-	pinsMap := make(map[string]Pin)
+	type pinGroup struct {
+		pin    Pin
+		places map[string]int
+	}
 
-	// group pins at the same location and kind together
+	groups := make(map[string]*pinGroup)
+
+	// group pins at the same location and kind together, remembering how
+	// often each place name shows up so the pin can carry a label
 	for _, event := range events {
 		key := getLocationKindKey(event.Loc, event.Kind)
 
-		pin, exists := pinsMap[key]
-		if exists {
-			pin.Amount++
-		} else {
-			pin = Pin{
-				Loc:    event.Loc,
-				Kind:   event.Kind,
-				Amount: 1,
+		group, exists := groups[key]
+		if !exists {
+			group = &pinGroup{
+				pin: Pin{
+					Loc:  event.Loc,
+					Kind: event.Kind,
+				},
+				places: make(map[string]int),
 			}
+			groups[key] = group
 		}
 
-		pinsMap[key] = pin
+		group.pin.Amount++
+		// Address-like places ("13 Rue Henri") make poor labels: skip them,
+		// so a real venue name at the same location wins the count.
+		if event.Place != "" && !isAddressLikePlace(event.Place) {
+			group.places[event.Place]++
+		}
 	}
 
-	pins := make([]Pin, 0, len(pinsMap))
-	for _, pin := range pinsMap {
+	pins := make([]Pin, 0, len(groups))
+	for _, group := range groups {
+		pin := group.pin
+		pin.Label = ShortPlaceTitle(bestPlace(group.places))
 		pins = append(pins, pin)
 	}
 
@@ -68,6 +89,18 @@ func (p *pins) GetPins(bounds Bounds, minDate, maxDate time.Time) ([]Pin, error)
 	})
 
 	return pins, nil
+}
+
+// bestPlace returns the most frequent place among the counted ones, breaking
+// ties lexicographically so the label is stable across runs.
+func bestPlace(places map[string]int) string {
+	best, bestCount := "", 0
+	for place, count := range places {
+		if count > bestCount || (count == bestCount && place < best) {
+			best, bestCount = place, count
+		}
+	}
+	return best
 }
 
 // getLocationKindKey creates a unique key for a location and kind combination

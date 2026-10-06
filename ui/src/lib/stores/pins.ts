@@ -8,6 +8,9 @@ export type Pin = {
   };
   kind: string;
   amount: number;
+  // Short place title shown on the pin ("Saint André"); absent when the
+  // grouped events have no known place.
+  label?: string;
 }
 
 // Pin currently focused in the popup. kind is unknown when the focus comes

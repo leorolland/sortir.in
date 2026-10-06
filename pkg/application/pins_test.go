@@ -152,6 +152,69 @@ func TestGetPinsSuccess(t *testing.T) {
 				},
 			},
 		},
+		"with a place, the pin label comes from the most frequent place": {
+			bounds: application.Bounds{
+				North: 48.9,
+				South: 48.8,
+				East:  2.4,
+				West:  2.3,
+			},
+			minDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			maxDate: time.Date(2025, 11, 25, 3, 0, 0, 0, time.UTC),
+			pinsReturned: []application.Pin{
+				{
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
+					Place:  "Cinéma Saint-André des Prés",
+				},
+				{
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
+					Place:  "Cinéma Saint-André des Prés",
+				},
+				{
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
+					Place:  "Autre lieu",
+				},
+			},
+			expected: []application.Pin{
+				{
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 3,
+					Label:  "Saint-André",
+				},
+			},
+		},
+		"with only empty places, the pin has no label": {
+			bounds: application.Bounds{
+				North: 48.9,
+				South: 48.8,
+				East:  2.4,
+				West:  2.3,
+			},
+			minDate: time.Date(2025, 11, 24, 0, 0, 0, 0, time.UTC),
+			maxDate: time.Date(2025, 11, 25, 3, 0, 0, 0, time.UTC),
+			pinsReturned: []application.Pin{
+				{
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
+					Place:  "",
+				},
+			},
+			expected: []application.Pin{
+				{
+					Loc:    application.EventLocation{Lat: 48.8, Lon: 2.3},
+					Kind:   application.KindConcert,
+					Amount: 1,
+				},
+			},
+		},
 	}
 
 	for name, tc := range testCases {

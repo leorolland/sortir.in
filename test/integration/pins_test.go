@@ -341,6 +341,42 @@ func TestPinsGetSuccess(t *testing.T) {
 				},
 			},
 		},
+		"with events sharing a place, the pin carries a short label": {
+			events: applicationtest.MustValidateEvents(t, []application.Event{
+				{
+					Name:  "Event 1",
+					Loc:   application.EventLocation{Lat: 42.8, Lon: 1.3},
+					Kind:  application.KindConcert,
+					Place: "Cinéma Saint-André des Prés",
+					Begin: time.Now().Add(time.Hour * 24),
+					End:   time.Now().Add(time.Hour * 24 * 2),
+				},
+				{
+					Name:  "Event 2",
+					Loc:   application.EventLocation{Lat: 42.8, Lon: 1.3},
+					Kind:  application.KindConcert,
+					Place: "Cinéma Saint-André des Prés",
+					Begin: time.Now().Add(time.Hour * 30),
+					End:   time.Now().Add(time.Hour * 40),
+				},
+			}),
+			bounds: application.Bounds{
+				North: 45.0000,
+				South: 41.0000,
+				East:  5.0000,
+				West:  1.0000,
+			},
+			minDate: time.Now(),
+			maxDate: time.Now().Add(time.Hour * 24 * 4),
+			expected: []application.Pin{
+				{
+					Loc:    application.EventLocation{Lat: 42.8, Lon: 1.3},
+					Kind:   application.KindConcert,
+					Amount: 2,
+					Label:  "Saint-André",
+				},
+			},
+		},
 	}
 
 	for name, testCase := range testCases {
