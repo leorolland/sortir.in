@@ -13,6 +13,9 @@
 
   export let map: MaplibreMap | undefined;
   export let collapsed = true;
+  // Called when the user clicks a suggestion; MapView owns the pin focus
+  // (popup + URL) and the map move.
+  export let onEventClick: (event: EventsResponse) => void = () => {};
   let events: EventsResponse[] = [];
   let unsubscribe: () => void;
 
@@ -125,18 +128,7 @@
               {#each visibleGroups[kind] as event}
               <button
                 class="event-item"
-                onclick={() => {
-                  if (map) {
-                    const coordinates = { lat: event.loc.lat, lon: event.loc.lon };
-                    map.flyTo({
-                      center: coordinates,
-                      speed: 1.2,
-                      curve: 1.4,
-                      zoom: 15,
-                      essential: true
-                    });
-                  }
-                }}
+                onclick={() => onEventClick(event)}
               >
                 {#if event.img}
                   <img src={event.img} alt={event.name} class="event-img" loading="lazy" />

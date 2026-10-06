@@ -11,6 +11,7 @@
   import MapSidebar from '$lib/components/MapSidebar.svelte';
   import { pinsToGeoJSON } from '$lib/utils/geoJsonUtils';
   import EventPopup from '$lib/components/EventPopup.svelte';
+  import type { EventsResponse } from '$lib/pocketbase/generated-types';
   import DateRangeSelector from '$lib/components/DateRangeSelector.svelte';
   import AppVersion from '$lib/components/AppVersion.svelte';
   import { pinSVGs, PIN_PIXEL_RATIO } from '$lib/components/pins/svg';
@@ -165,6 +166,31 @@
     syncUrl('push');
   }
 
+  // Everything a click on a rendered pin does: focus it (opens the popup)
+  // and, on touch devices, bring it above the bottom sheet. Desktop makes
+  // no map move: the popup opens next to the pin and handlePopupOpen pans
+  // only if it overflows the viewport. Shared by the map click handler and
+  // suggestion clicks (focusEvent), so the popup placement stays identical.
+  function pinClicked(loc: FocusedPin['loc'], kind?: string) {
+    focusPin({ loc, kind });
+
+    if (!map || !isTouchDevice()) return;
+
+    // Mobile: bring the pin to the middle of the map strip above the
+    // bottom sheet (which covers up to ~60% of the screen)
+    map.flyTo({
+      center: [loc.lon, loc.lat],
+      duration: 300,
+      freezeElevation: true,
+      offset: [0, -window.innerHeight * 0.3]
+    });
+  }
+
+  // Click on a suggestion: same behavior as a direct click on the pin.
+  function focusEvent(event: EventsResponse) {
+    pinClicked({ lat: event.loc.lat, lon: event.loc.lon }, event.kind);
+  }
+
   function clearPinSelection() {
     if (!selectedPin) return;
     selectedPin = null;
@@ -271,25 +297,11 @@
       if (features.length > 0) {
         const feature = features[0];
         if (feature.geometry && feature.geometry.type === 'Point') {
-          const coordinates = feature.geometry.coordinates.slice();
           const focusedLoc = pinLocFromFeature(feature);
 
           if (focusedLoc) {
-            focusPin({ loc: focusedLoc, kind: feature.properties?.kind });
+            pinClicked(focusedLoc, feature.properties?.kind);
           }
-
-          if (isTouchDevice()) {
-            // Mobile: bring the pin to the middle of the map strip above the
-            // bottom sheet (which covers up to ~60% of the screen)
-            map.flyTo({
-              center: coordinates as [number, number],
-              duration: 300,
-              freezeElevation: true,
-              offset: [0, -window.innerHeight * 0.3]
-            });
-          }
-          // Desktop: no forced move; the popup opens next to the pin and
-          // handlePopupOpen pans only if it overflows the viewport
         }
       } else {
         clearPinSelection();
@@ -352,6 +364,7 @@
   <MapSidebar
     map={map}
     collapsed={sidebarCollapsed}
+    onEventClick={focusEvent}
   />
 
   <DateRangeSelector selectedDateRange={selectedDateRange} />
