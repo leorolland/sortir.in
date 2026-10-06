@@ -1,0 +1,477 @@
+{
+  "hits": {
+    "total": {
+      "value": 7,
+      "relation": "eq"
+    },
+    "hits": [
+      {
+        "_index": "poi-v3",
+        "_id": "16",
+        "_source": {
+          "isLocatedAt": {
+            "geo": {
+              "latitude": 48.1388618,
+              "uri": "https://data.datatourisme.fr/a9a539e7-e695-388e-b908-a40153384b53",
+              "longitude": -1.9489967
+            },
+            "address": {
+              "hasAddressCity": {
+                "label": {
+                  "@de": "Montfort-sur-Meu",
+                  "@pt": "Montfort-sur-Meu",
+                  "@en": "Montfort-sur-Meu",
+                  "@it": "Montfort-sur-Meu",
+                  "@fr": "Montfort-sur-Meu",
+                  "@es": "Montfort-sur-Meu",
+                  "@nl": "Montfort-sur-Meu"
+                }
+              },
+              "streetAddress": "1 Place de la Gare",
+              "postalCode": "35160",
+              "addressLocality": "Montfort-sur-Meu"
+            }
+          },
+          "label": {
+            "@fr": "Atelier Méditation"
+          },
+          "type": [
+            "https://www.datatourisme.fr/ontology/core#Traineeship",
+            "http://schema.org/Event",
+            "https://www.datatourisme.fr/ontology/core#Practice",
+            "https://www.datatourisme.fr/ontology/core#PointOfInterest",
+            "https://www.datatourisme.fr/ontology/core#EntertainmentAndEvent",
+            "https://www.datatourisme.fr/ontology/core#Product",
+            "http://schema.org/Product"
+          ],
+          "uri": "https://data.datatourisme.fr/38/7379c297-7962-3a3a-b862-72c87d736faf",
+          "takesPlaceAt": {
+            "endDate": "2026-10-06",
+            "startTime": "-T19:15:00",
+            "endTime": "-T20:15:00",
+            "uri": "https://data.datatourisme.fr/a9f9fdb9-444d-318c-b8a2-9fc9ef87b8a3",
+            "startDate": "2026-10-06"
+          },
+          "hasContact": {
+            "uri": "https://data.datatourisme.fr/37e83e82",
+            "homepage": "https://montfort-sur-meu-tourisme.billetweb.fr/atelier-mediation"
+          }
+        }
+      },
+      {
+        "_index": "poi-v3",
+        "_id": "14",
+        "_source": {
+          "isLocatedAt": {
+            "geo": {
+              "latitude": 48.25134,
+              "uri": "https://data.datatourisme.fr/a33e6da4-d081-3404-a8d2-5a232df56c86",
+              "longitude": -1.99912
+            },
+            "address": {
+              "hasAddressCity": {
+                "label": {
+                  "@de": "Landujan",
+                  "@pt": "Landujan",
+                  "@en": "Landujan",
+                  "@it": "Landujan",
+                  "@fr": "Landujan",
+                  "@es": "Landujan",
+                  "@nl": "Landujan"
+                }
+              },
+              "streetAddress": "8B Rue de Médréac",
+              "postalCode": "35360",
+              "addressLocality": "Landujan"
+            }
+          },
+          "label": {
+            "@fr": "Téléthon : rendez-vous à Landujan !"
+          },
+          "type": [
+            "http://schema.org/SaleEvent",
+            "https://www.datatourisme.fr/ontology/core#SportsEvent",
+            "https://www.datatourisme.fr/ontology/core#Game",
+            "https://www.datatourisme.fr/ontology/core#SaleEvent",
+            "https://www.datatourisme.fr/ontology/core#PointOfInterest",
+            "http://schema.org/SportsEvent",
+            "http://schema.org/Event",
+            "https://www.datatourisme.fr/ontology/core#Festival",
+            "https://www.datatourisme.fr/ontology/core#GarageSale",
+            "http://schema.org/Festival",
+            "https://www.datatourisme.fr/ontology/core#EntertainmentAndEvent",
+            "https://www.datatourisme.fr/ontology/core#CulturalEvent"
+          ],
+          "uri": "https://data.datatourisme.fr/38/10e1476a-14e6-372c-85f6-dd2707ba1fde",
+          "takesPlaceAt": {
+            "endDate": "2026-10-11",
+            "uri": "https://data.datatourisme.fr/e7c6f9f1-68b6-349d-9359-58e0d45389b0",
+            "startDate": "2026-10-10"
+          }
+        }
+      },
+      {
+        "_index": "poi-v3",
+        "_id": "10",
+        "_source": {
+          "isLocatedAt": {
+            "geo": {
+              "latitude": 48.310759,
+              "uri": "https://data.datatourisme.fr/d46da7f7-b73d-335b-a0b1-6bc978355ac2",
+              "longitude": -1.774443
+            },
+            "address": {
+              "hasAddressCity": {
+                "label": {
+                  "@de": "Hédé-Bazouges",
+                  "@pt": "Hédé-Bazouges",
+                  "@en": "Hédé-Bazouges",
+                  "@it": "Hédé-Bazouges",
+                  "@fr": "Hédé-Bazouges",
+                  "@es": "Hédé-Bazouges",
+                  "@nl": "Hédé-Bazouges"
+                }
+              },
+              "streetAddress": "7 Lieu-dit La Ville Neuve",
+              "postalCode": "35630",
+              "addressLocality": "Hédé-Bazouges"
+            }
+          },
+          "label": {
+            "@fr": "Visite de la coutellerie"
+          },
+          "type": [
+            "http://schema.org/Product",
+            "https://www.datatourisme.fr/ontology/core#EntertainmentAndEvent",
+            "https://www.datatourisme.fr/ontology/core#PointOfInterest",
+            "https://www.datatourisme.fr/ontology/core#Product",
+            "https://www.datatourisme.fr/ontology/core#Visit",
+            "http://schema.org/Event"
+          ],
+          "uri": "https://data.datatourisme.fr/38/22d67dec-ec82-3151-bc89-9bd13757239c",
+          "takesPlaceAt": [
+            {
+              "endDate": "2026-10-30",
+              "startTime": "-T14:00:00",
+              "endTime": "-T14:40:00",
+              "uri": "https://data.datatourisme.fr/2ead3d56-ec9b-35c1-a1d6-4a1f08d16867",
+              "startDate": "2026-10-30"
+            },
+            {
+              "endDate": "2026-10-29",
+              "startTime": "-T16:00:00",
+              "endTime": "-T16:40:00",
+              "uri": "https://data.datatourisme.fr/6804213b-65e3-355b-8387-a39688056aa4",
+              "startDate": "2026-10-29"
+            },
+            {
+              "endDate": "2026-10-26",
+              "startTime": "-T16:00:00",
+              "endTime": "-T16:40:00",
+              "uri": "https://data.datatourisme.fr/512d701e-07c3-325b-a8a5-0099729501fd",
+              "startDate": "2026-10-26"
+            },
+            {
+              "endDate": "2026-10-24",
+              "startTime": "-T14:00:00",
+              "endTime": "-T14:40:00",
+              "uri": "https://data.datatourisme.fr/832a0d0f-ed47-396a-a267-8eaa20458318",
+              "startDate": "2026-10-24"
+            },
+            {
+              "endDate": "2026-10-31",
+              "startTime": "-T16:00:00",
+              "endTime": "-T16:40:00",
+              "uri": "https://data.datatourisme.fr/98470001-03c0-3f62-95e5-84c3a8f26302",
+              "startDate": "2026-10-31"
+            },
+            {
+              "endDate": "2026-10-22",
+              "startTime": "-T14:00:00",
+              "endTime": "-T14:40:00",
+              "uri": "https://data.datatourisme.fr/cc2ccbe4-6404-3a74-93a9-370403510e61",
+              "startDate": "2026-10-22"
+            },
+            {
+              "endDate": "2026-10-21",
+              "startTime": "-T14:00:00",
+              "endTime": "-T14:40:00",
+              "uri": "https://data.datatourisme.fr/c12d5312-23b6-3ea2-80ba-fdfcb2aea5da",
+              "startDate": "2026-10-21"
+            },
+            {
+              "endDate": "2026-10-29",
+              "startTime": "-T14:00:00",
+              "endTime": "-T14:40:00",
+              "uri": "https://data.datatourisme.fr/e99574d8-0494-3176-b43c-b297147646c5",
+              "startDate": "2026-10-29"
+            },
+            {
+              "endDate": "2026-10-28",
+              "startTime": "-T16:00:00",
+              "endTime": "-T16:40:00",
+              "uri": "https://data.datatourisme.fr/afd6937f-f271-3a37-8caf-a72d6ebb6060",
+              "startDate": "2026-10-28"
+            },
+            {
+              "endDate": "2026-10-22",
+              "startTime": "-T16:00:00",
+              "endTime": "-T16:40:00",
+              "uri": "https://data.datatourisme.fr/ac7dab9c-049d-3354-a1e5-2d27b8eb7190",
+              "startDate": "2026-10-22"
+            },
+            {
+              "endDate": "2026-10-27",
+              "startTime": "-T14:00:00",
+              "endTime": "-T14:40:00",
+              "uri": "https://data.datatourisme.fr/41c25bff-ebc6-31e8-b28e-2bc6f6a71ff1",
+              "startDate": "2026-10-27"
+            },
+            {
+              "endDate": "2026-10-28",
+              "startTime": "-T14:00:00",
+              "endTime": "-T14:40:00",
+              "uri": "https://data.datatourisme.fr/f68e757d-859d-3712-92f5-c1c3d1d8d4ab",
+              "startDate": "2026-10-28"
+            },
+            {
+              "endDate": "2026-10-24",
+              "startTime": "-T16:00:00",
+              "endTime": "-T16:40:00",
+              "uri": "https://data.datatourisme.fr/29df07c3-8b06-3320-a3ff-5c623ea767d6",
+              "startDate": "2026-10-24"
+            },
+            {
+              "endDate": "2026-10-21",
+              "startTime": "-T16:00:00",
+              "endTime": "-T16:40:00",
+              "uri": "https://data.datatourisme.fr/d7daf552-f4fe-3f03-8506-12b644124d1c",
+              "startDate": "2026-10-21"
+            },
+            {
+              "endDate": "2026-10-23",
+              "startTime": "-T16:00:00",
+              "endTime": "-T16:40:00",
+              "uri": "https://data.datatourisme.fr/99dca011-01ef-3d65-9975-bc97dbe17d16",
+              "startDate": "2026-10-23"
+            },
+            {
+              "endDate": "2026-10-31",
+              "startTime": "-T14:00:00",
+              "endTime": "-T14:40:00",
+              "uri": "https://data.datatourisme.fr/71c1ddc1-08ce-3daf-9fbf-4f25adec3e1e",
+              "startDate": "2026-10-31"
+            },
+            {
+              "endDate": "2026-10-30",
+              "startTime": "-T16:00:00",
+              "endTime": "-T16:40:00",
+              "uri": "https://data.datatourisme.fr/33c4ee67-11d3-32a9-b646-9c39cc561a57",
+              "startDate": "2026-10-30"
+            },
+            {
+              "endDate": "2026-10-23",
+              "startTime": "-T14:00:00",
+              "endTime": "-T14:40:00",
+              "uri": "https://data.datatourisme.fr/e83e4ae5-1352-356b-a74a-f6cbd6518dc2",
+              "startDate": "2026-10-23"
+            }
+          ]
+        }
+      },
+      {
+        "_index": "poi-v3",
+        "_id": "58",
+        "_source": {
+          "isLocatedAt": {
+            "geo": {
+              "latitude": 48.03824,
+              "uri": "https://data.datatourisme.fr/086d0d99-dd87-3483-a02e-981982c17316",
+              "longitude": -1.5016
+            },
+            "address": {
+              "hasAddressCity": {
+                "label": {
+                  "@de": "Châteaugiron",
+                  "@pt": "Châteaugiron",
+                  "@en": "Châteaugiron",
+                  "@it": "Châteaugiron",
+                  "@fr": "Châteaugiron",
+                  "@nl": "Châteaugiron",
+                  "@es": "Châteaugiron"
+                }
+              },
+              "streetAddress": "15 Avenue Pierre Le Treut",
+              "postalCode": "35410",
+              "addressLocality": "Châteaugiron"
+            }
+          },
+          "label": {
+            "@fr": "Les Negresses Vertes - Concert"
+          },
+          "type": [
+            "http://schema.org/MusicEvent",
+            "https://www.datatourisme.fr/ontology/core#EntertainmentAndEvent",
+            "https://www.datatourisme.fr/ontology/core#CulturalEvent",
+            "http://schema.org/Event",
+            "https://www.datatourisme.fr/ontology/core#PointOfInterest",
+            "https://www.datatourisme.fr/ontology/core#Concert"
+          ],
+          "uri": "https://data.datatourisme.fr/38/f85024bf-1685-31f8-89b5-07e0b4176828",
+          "takesPlaceAt": {
+            "endDate": "2026-11-27",
+            "startTime": "-T20:30:00",
+            "uri": "https://data.datatourisme.fr/14984e9a-16a2-3f8f-89e0-0409a2c4057c",
+            "startDate": "2026-11-27"
+          },
+          "hasContact": [
+            {
+              "legalName": "La Ferme de la Bintinais",
+              "uri": "https://data.datatourisme.fr/aaa"
+            },
+            {
+              "uri": "https://data.datatourisme.fr/bbb",
+              "homepage": "https://www.billetterie-ferme-de-la-bintinais.fr/concert"
+            }
+          ]
+        }
+      },
+      {
+        "_index": "poi-v3",
+        "_id": "21",
+        "_source": {
+          "isLocatedAt": {
+            "geo": {
+              "latitude": 48.10344,
+              "uri": "https://data.datatourisme.fr/3525b1ff-d712-3f5a-804b-5bf2dee4104b",
+              "longitude": -1.51644
+            },
+            "address": {
+              "hasAddressCity": {
+                "label": {
+                  "@de": "Noyal-sur-Vilaine",
+                  "@pt": "Noyal-sur-Vilaine",
+                  "@en": "Noyal-sur-Vilaine",
+                  "@it": "Noyal-sur-Vilaine",
+                  "@fr": "Noyal-sur-Vilaine",
+                  "@nl": "Noyal-sur-Vilaine",
+                  "@es": "Noyal-sur-Vilaine"
+                }
+              },
+              "streetAddress": "4 Rue Roland Moreno",
+              "postalCode": "35530",
+              "addressLocality": "Noyal-sur-Vilaine"
+            }
+          },
+          "label": {
+            "@fr": "Collecte Octobre Rose"
+          },
+          "type": [
+            "https://www.datatourisme.fr/ontology/core#EntertainmentAndEvent",
+            "http://schema.org/Event",
+            "https://www.datatourisme.fr/ontology/core#PointOfInterest"
+          ],
+          "uri": "https://data.datatourisme.fr/38/5aca3925-cf16-33b5-a937-4940f666525f",
+          "takesPlaceAt": {
+            "endDate": "2026-11-01",
+            "startTime": "-T10:00:00",
+            "endTime": "-T19:30:00",
+            "uri": "https://data.datatourisme.fr/163a2e67-d3f7-3a5c-a334-4599a704d39f",
+            "startDate": "2026-10-01"
+          }
+        }
+      },
+      {
+        "_index": "poi-v3",
+        "_id": "3",
+        "_source": {
+          "isLocatedAt": {
+            "geo": {
+              "latitude": 48.0484223,
+              "uri": "https://data.datatourisme.fr/56af8b27-93dc-3688-b14e-c056dd0c3aa9",
+              "longitude": -1.8647052
+            },
+            "address": {
+              "hasAddressCity": {
+                "label": {
+                  "@de": "Paimpont",
+                  "@pt": "Paimpont",
+                  "@en": "Paimpont",
+                  "@it": "Paimpont",
+                  "@fr": "Paimpont",
+                  "@nl": "Paimpont",
+                  "@es": "Paimpont"
+                }
+              },
+              "postalCode": "35310",
+              "addressLocality": "Paimpont"
+            }
+          },
+          "label": {
+            "@fr": "Balade nocturne : \"Les 5 sens d'Halloween\""
+          },
+          "type": [
+            "https://www.datatourisme.fr/ontology/core#PointOfInterest",
+            "https://www.datatourisme.fr/ontology/core#SportsEvent",
+            "https://www.datatourisme.fr/ontology/core#Rambling",
+            "https://www.datatourisme.fr/ontology/core#EntertainmentAndEvent",
+            "http://schema.org/SportsEvent",
+            "http://schema.org/Event"
+          ],
+          "uri": "https://data.datatourisme.fr/38/94f3d7a6-d109-365c-b73b-9b206d1b8e2b",
+          "takesPlaceAt": {
+            "endDate": "2026-10-31",
+            "startTime": "-T17:30:00",
+            "uri": "https://data.datatourisme.fr/c585ad2e-3abc-30a8-aef6-5374d25d7f4f",
+            "startDate": "2026-10-30"
+          }
+        }
+      },
+      {
+        "_index": "poi-v3",
+        "_id": "53",
+        "_source": {
+          "isLocatedAt": {
+            "geo": {
+              "latitude": 48.1844481,
+              "uri": "https://data.datatourisme.fr/81a7fdf2-53c4-33fb-8c87-ad7cb69da72a",
+              "longitude": -1.9208468
+            },
+            "address": {
+              "hasAddressCity": {
+                "label": {
+                  "@de": "Pleumeleuc",
+                  "@pt": "Pleumeleuc",
+                  "@en": "Pleumeleuc",
+                  "@it": "Pleumeleuc",
+                  "@fr": "Pleumeleuc",
+                  "@nl": "Pleumeleuc",
+                  "@es": "Pleumeleuc"
+                }
+              },
+              "postalCode": "35137",
+              "addressLocality": "Pleumeleuc"
+            }
+          },
+          "label": {
+            "@fr": "Exposition \"Safari Graffiti\""
+          },
+          "type": [
+            "https://www.datatourisme.fr/ontology/core#EntertainmentAndEvent",
+            "http://schema.org/ExhibitionEvent",
+            "https://www.datatourisme.fr/ontology/core#CulturalEvent",
+            "https://www.datatourisme.fr/ontology/core#PointOfInterest",
+            "https://www.datatourisme.fr/ontology/core#Exhibition",
+            "http://schema.org/Event"
+          ],
+          "uri": "https://data.datatourisme.fr/38/67c44879-1b00-3560-97bb-0d37e8a6e67c",
+          "takesPlaceAt": {
+            "endDate": "2026-12-04",
+            "uri": "https://data.datatourisme.fr/dc716d15-792d-378f-a895-68a9e2cd598a",
+            "startDate": "2026-09-02"
+          }
+        }
+      }
+    ]
+  }
+}

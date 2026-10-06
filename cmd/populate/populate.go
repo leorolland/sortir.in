@@ -28,6 +28,7 @@ func main() {
 		collector.NewParisEventsCollector(),
 		collector.NewInfomaniakCollector(),
 		collector.NewOpenAgendaCollector(),
+		collector.NewDataTourismeCollector(),
 	)
 
 	eventSaver := pb.NewPBClient("http://localhost:8090")
