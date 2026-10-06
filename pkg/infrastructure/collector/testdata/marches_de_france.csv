@@ -1,0 +1,9 @@
+slug,nom,commune,insee,departement,latitude,longitude,adresse,jours,horaires,source_jours,saison,osm_id,datatourisme_uri,maj_source
+amberieux,"Marché d'Ambérieux",Ambérieux,01005,01,45.99861,4.90178,"Parking de la salle polyvalente",We,08:00-12:00,osm,,way/1,,2026-01-01
+ville-a,"Marché hebdomadaire",Ville-A,01021,01,45.99339,4.82076,Place A,Sa,08:00-13:00,osm,,way/2,,2026-01-01
+ville-b,"Marché hebdomadaire",Ville-B,01022,01,46.00000,4.90000,Place B,Sa,,osm,,way/3,,2026-01-01
+ville-a-est,"Marché hebdomadaire",Ville-A,01021,01,45.99000,4.82000,"Place A, coin Est",Sa,le matin,manuel,,way/4,,2026-01-01
+nocturne,"Marché nocturne",Ville-C,01023,01,46.10000,5.00000,Esplanade,Sa,20:00-00:00,osm,Jul-Aug,way/5,,2026-01-01
+hiver,"Marché d'hiver",Ville-D,01024,01,46.20000,5.10000,Place D,Tu-Su,09:00-13:00,osm,Nov-Mar,way/6,,2026-01-01
+sans-jours,"Marché mystère",Ville-E,01025,01,46.30000,5.20000,Place E,,,,,way/7,https://data.datatourisme.fr/13/x,2026-01-01
+sans-coords,"Marché perdu",Ville-F,01026,01,,,"",Mo,08:00-12:00,osm,,way/8,,2026-01-01

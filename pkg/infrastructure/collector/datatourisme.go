@@ -476,7 +476,7 @@ var dataTourismeTypeKinds = []struct {
 	{"conference", application.KindExhibitions},
 	{"fairorshow", application.KindExhibitions},
 	{"festival", application.KindFestival},
-	{"market", application.KindFleaMarket},
+	{"market", application.KindMarket},
 	{"bricabrac", application.KindFleaMarket},
 	{"garagesale", application.KindFleaMarket},
 	{"saleevent", application.KindFleaMarket},

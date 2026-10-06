@@ -12,6 +12,7 @@ export const KIND_LABELS: Record<string, string> = {
   circus: 'Cirque',
   workshop: 'Ateliers',
   'flea-market': 'Brocantes',
+  market: 'Marchés',
   solidarity: 'Solidarité'
 };
 

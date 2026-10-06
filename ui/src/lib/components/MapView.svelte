@@ -433,6 +433,7 @@
             'festival', 'pin-festival',
             'theater', 'pin-theater',
             'party', 'pin-party',
+            'market', 'pin-market',
             'pin-default'
           ],
           'icon-size': 1.0,

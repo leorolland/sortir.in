@@ -4,6 +4,7 @@ import { createTheaterPinSVG } from './TheaterPinSVG';
 import { createConcertPinSVG } from './ConcertPinSVG';
 import { createFestivalPinSVG } from './FestivalPinSVG';
 import { createPartyPinSVG } from './PartyPinSVG';
+import { createMarketPinSVG } from './MarketPinSVG';
 import { PIN_PIXEL_RATIO } from './PinShape';
 
 // Modern flat palette (Apple system colors), all high-contrast with white glyphs
@@ -13,7 +14,8 @@ const PIN_COLORS = {
   concert: '#FF2D55',
   festival: '#BF5AF2',
   theater: '#5E5CE6',
-  party: '#0A84FF'
+  party: '#0A84FF',
+  market: '#34C759'
 };
 
 // Génère tous les pins SVG avec leurs couleurs respectives
@@ -23,7 +25,8 @@ export const pinSVGs = {
   concert: createConcertPinSVG(PIN_COLORS.concert),
   festival: createFestivalPinSVG(PIN_COLORS.festival),
   theater: createTheaterPinSVG(PIN_COLORS.theater),
-  party: createPartyPinSVG(PIN_COLORS.party)
+  party: createPartyPinSVG(PIN_COLORS.party),
+  market: createMarketPinSVG(PIN_COLORS.market)
 };
 
 // Exporte les fonctions de création pour une utilisation personnalisée
@@ -33,7 +36,8 @@ export {
   createTheaterPinSVG,
   createConcertPinSVG,
   createFestivalPinSVG,
-  createPartyPinSVG
+  createPartyPinSVG,
+  createMarketPinSVG
 };
 
 // Exporte les couleurs pour une utilisation externe

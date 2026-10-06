@@ -39,6 +39,22 @@ two common shapes.
    `go run cmd/populate/populate.go 1` and inspect results (see the
    live-data-probe skill).
 
+## Nationwide sources (GlobalCollector)
+
+Sources covering a whole country with no per-location query (national CSV or
+API — e.g. `marchesdefrance.go`, ADR 0007) implement
+`application.GlobalCollector` instead:
+
+1. **Create** the collector with `CollectAll() ([]application.Event, error)`,
+   `New<Source>Collector() application.GlobalCollector`.
+2. **Register** it in `cmd/populate/populate.go` via
+   `application.NewGlobalPopulator(...)` — it runs once per populate run,
+   before the city loop, and its save path batches (~1000 events per PUT).
+3. **Recurring schedules** (markets, weekly slots) must be materialized into
+   concrete `Begin`/`End` instances over the next 14 days (Europe/Paris) —
+   see `expandMarket` in `marchesdefrance.go` for the pattern, including name
+   disambiguation for shared names (the upsert key is `(name, begin, end)`).
+
 ## Constraints
 
 - The events table upserts on `(name, begin, end)` — a source emitting unstable

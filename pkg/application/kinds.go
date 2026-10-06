@@ -22,6 +22,7 @@ const (
 	KindCircus         Kind = "circus"
 	KindWorkshop       Kind = "workshop"
 	KindFleaMarket     Kind = "flea-market"
+	KindMarket         Kind = "market"
 	KindSolidarity     Kind = "solidarity"
 )
 
@@ -57,7 +58,9 @@ func KindFromString(s string) Kind {
 		return KindCircus
 	case "workshop", "atelier", "littérature", "enfants", "loisirs", "nature":
 		return KindWorkshop
-	case "marché", "brocante":
+	case "market", "marché", "marché alimentaire":
+		return KindMarket
+	case "brocante":
 		return KindFleaMarket
 	}
 	return KindUnknown

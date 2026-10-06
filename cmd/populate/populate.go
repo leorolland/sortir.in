@@ -34,6 +34,12 @@ func main() {
 	eventSaver := pb.NewPBClient("http://localhost:8090")
 	populator := application.NewPopulator(compositeCollector, eventSaver)
 
+	globalPopulator := application.NewGlobalPopulator(collector.NewMarchesDeFranceCollector(), eventSaver)
+	slog.Info("Populating nationwide events")
+	if err := globalPopulator.PopulateAll(); err != nil {
+		slog.Error("Failed to populate nationwide events", "error", err)
+	}
+
 	slog.Info("Populating events", "location_limit", limit)
 
 	iterator := application.NewEuropeCitiesIterator()
