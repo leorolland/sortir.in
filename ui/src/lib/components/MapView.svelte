@@ -362,7 +362,6 @@
 
 <div class="map-container">
   <MapSidebar
-    map={map}
     collapsed={sidebarCollapsed}
     onEventClick={focusEvent}
   />

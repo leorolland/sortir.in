@@ -2,7 +2,6 @@
   import { getRelativeTimeDisplay } from '$lib/utils/dateUtils';
   import { kindLabel } from '$lib/utils/kinds';
   import { kindFilter } from '$lib/stores/filters';
-  import type { Map as MaplibreMap } from 'maplibre-gl';
   import FloatingPanel from './FloatingPanel.svelte';
   import CrossIcon from './CrossIcon.svelte';
   import type { EventsResponse } from '$lib/pocketbase/generated-types';
@@ -11,7 +10,6 @@
 
   type SidebarEvent = EventsResponse & { timeInfo: { status: string; display: string } };
 
-  export let map: MaplibreMap | undefined;
   export let collapsed = true;
   // Called when the user clicks a suggestion; MapView owns the pin focus
   // (popup + URL) and the map move.
@@ -56,17 +54,10 @@
     return event.timeInfo.status === 'En cours' ? 'En cours' : event.timeInfo.display;
   }
 
-  // Function to toggle sidebar and update map padding
+  // Collapse/expand only moves the panel itself: the map camera is left
+  // untouched, so no moveend (and no pins/suggestions refetch) fires.
   function toggleSidebar() {
     collapsed = !collapsed;
-
-    if (map) {
-      const padding = { left: collapsed ? 0 : 380 };
-      map.easeTo({
-        padding,
-        duration: 100
-      });
-    }
   }
 </script>
 
